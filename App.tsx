@@ -8,6 +8,21 @@ import {
   getNotificationPermission,
   isNotificationSupported
 } from './services/notificationService';
+import {
+  trackNoteCreated,
+  trackNoteDeleted,
+  trackNoteDuplicated,
+  trackNoteRenamed,
+  trackLinkClicked,
+  trackFolderCreated,
+  trackFolderDeleted,
+  trackFolderRenamed,
+  trackNoteMoved,
+  trackGraphViewed,
+  trackGraphNodeClicked,
+  trackGraphModeChanged,
+  trackSessionStart
+} from './services/analyticsService';
 import RichEditor from './components/RichEditor';
 import GraphView from './components/GraphView';
 import GraphView3D from './components/GraphView3D';
@@ -199,6 +214,7 @@ const App: React.FC = () => {
       if (loadedNotes.length > 0) {
         setNotes(loadedNotes);
         setActiveNoteId(loadedNotes[0].id);
+        trackSessionStart(loadedNotes.length, loadedFolders.length);
       } else {
         // If no notes in file, create a welcome note
         const welcomeNote: Note = {
@@ -214,6 +230,7 @@ const App: React.FC = () => {
         setNotes([welcomeNote]);
         setActiveNoteId(welcomeNote.id);
         await saveNotes([welcomeNote]);
+        trackSessionStart(1, 0);
       }
       setIsLoading(false);
     };
@@ -283,6 +300,7 @@ const App: React.FC = () => {
     };
     setNotes([newNote, ...notes]);
     setActiveNoteId(newNote.id);
+    trackNoteCreated();
   };
 
   const createFolder = () => {
@@ -301,6 +319,7 @@ const App: React.FC = () => {
     setFolders([...folders, newFolder]);
     setShowFolderModal(false);
     setNewFolderName('');
+    trackFolderCreated();
   };
 
   const deleteFolder = (folderId: string) => {
@@ -334,6 +353,7 @@ const App: React.FC = () => {
     // Delete the folder
     setFolders(folders.filter(f => f.id !== deleteFolderConfirm.folderId));
     setDeleteFolderConfirm({ visible: false, folderId: null, folderName: '', noteCount: 0 });
+    trackFolderDeleted();
   };
 
   const cancelDeleteFolder = () => {
@@ -350,6 +370,7 @@ const App: React.FC = () => {
       setFolders(folders.map(f =>
         f.id === editingFolderId ? { ...f, name: editingFolderName.trim() } : f
       ));
+      trackFolderRenamed();
     }
     setEditingFolderId(null);
     setEditingFolderName('');
@@ -432,6 +453,7 @@ const App: React.FC = () => {
     setNotes([newNote, ...notes]);
     setActiveNoteId(newNote.id);
     closeContextMenu();
+    trackNoteDuplicated();
   };
 
   const renameNote = (noteId: string) => {
@@ -455,6 +477,7 @@ const App: React.FC = () => {
     ));
     setRenameModal({ visible: false, noteId: null, currentTitle: '' });
     setRenameInput('');
+    trackNoteRenamed();
   };
 
   const cancelRenameNote = () => {
@@ -492,12 +515,14 @@ const App: React.FC = () => {
 
   const handleNodeClick = useCallback((nodeId: string) => {
     setActiveNoteId(nodeId);
+    trackGraphNodeClicked();
   }, []);
 
   const handleLinkClick = (title: string) => {
     const target = notes.find(n => n.title === title);
     if (target) {
       setActiveNoteId(target.id);
+      trackLinkClicked(title);
     } else {
       // Show confirmation modal to create linked note
       setCreateLinkModal({
@@ -565,6 +590,7 @@ const App: React.FC = () => {
     }
 
     setDeleteConfirm({ visible: false, noteId: null, noteTitle: '' });
+    trackNoteDeleted();
   };
 
   const cancelDeleteNote = () => {
@@ -601,6 +627,7 @@ const App: React.FC = () => {
       moveNoteToFolder(draggedNote, folderId);
       setDraggedNote(null);
       setDragOverFolder(null);
+      trackNoteMoved(true);
     }
   };
 
@@ -610,6 +637,7 @@ const App: React.FC = () => {
       moveNoteToFolder(draggedNote, null);
       setDraggedNote(null);
       setDragOverFolder(null);
+      trackNoteMoved(false);
     }
   };
 
@@ -981,7 +1009,7 @@ const App: React.FC = () => {
                      <div className="absolute top-0 left-0 w-full flex justify-between items-center p-2 z-10 bg-slate-100/80 backdrop-blur-sm">
                          <div className="flex items-center gap-1">
                            <button
-                             onClick={() => setGraphMode('2D')}
+                             onClick={() => { setGraphMode('2D'); trackGraphModeChanged('2D'); }}
                              className={`px-2 py-0.5 text-xs font-medium rounded transition-colors ${
                                graphMode === '2D'
                                  ? 'bg-slate-700 text-white'
@@ -991,7 +1019,7 @@ const App: React.FC = () => {
                              2D
                            </button>
                            <button
-                             onClick={() => setGraphMode('3D')}
+                             onClick={() => { setGraphMode('3D'); trackGraphModeChanged('3D'); }}
                              className={`px-2 py-0.5 text-xs font-medium rounded transition-colors ${
                                graphMode === '3D'
                                  ? 'bg-slate-700 text-white'
