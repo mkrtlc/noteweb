@@ -1,0 +1,41 @@
+{
+  "name": "noteweb",
+  "version": "1.0.0",
+  "description": "A beautiful note-taking app with graph visualization and Notion-style markdown editing",
+  "type": "module",
+  "author": "NoteWeb Contributors",
+  "license": "MIT",
+  "keywords": [
+    "note-taking",
+    "markdown",
+    "knowledge-graph",
+    "notion",
+    "graph-visualization",
+    "bidirectional-links",
+    "zettelkasten",
+    "pkm"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "3d-force-graph": "^1.79.0",
+    "d3": "^7.9.0",
+    "lucide-react": "^0.554.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "three": "^0.181.2",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "typescript": "~5.8.2",
+    "vite": "^6.2.0"
+  }
+}

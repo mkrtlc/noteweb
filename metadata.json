@@ -1,0 +1,5 @@
+{
+  "name": "NoteWeb",
+  "description": "A note-taking application featuring WYSIWYG editing, bi-directional linking, and graph visualization.",
+  "requestFramePermissions": []
+}
