@@ -1940,7 +1940,6 @@ const RichEditor: React.FC<RichEditorProps> = ({
               <div>
                 <label className="block text-xs text-slate-500 mb-1">Text</label>
                 <input
-                  autoFocus
                   type="text"
                   placeholder="Display text..."
                   className="w-full px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
@@ -1963,6 +1962,7 @@ const RichEditor: React.FC<RichEditorProps> = ({
               <div>
                 <label className="block text-xs text-slate-500 mb-1">URL</label>
                 <input
+                  autoFocus
                   type="text"
                   placeholder="https://..."
                   className="w-full px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
