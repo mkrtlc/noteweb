@@ -2,7 +2,7 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { markdownToHtml, htmlToMarkdown } from '../utils/markdownParser';
 import { Note } from '../types';
-import { Hash, FilePlus, Heading1, Heading2, Heading3, Bold, Italic, Code, List, ListOrdered, Quote, Minus, Calendar, Clock, GripVertical } from 'lucide-react';
+import { Hash, FilePlus, Heading1, Heading2, Heading3, Bold, Italic, Code, List, ListOrdered, Quote, Minus, Calendar, Clock, GripVertical, Link2 } from 'lucide-react';
 
 interface RichEditorProps {
   initialContent: string;
@@ -35,6 +35,11 @@ const RichEditor: React.FC<RichEditorProps> = ({
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [editingDateChip, setEditingDateChip] = useState<HTMLElement | null>(null);
   const [selectedTime, setSelectedTime] = useState<string>('09:00'); // Default time for reminders
+
+  // URL link modal state (Cmd+K)
+  const [showUrlModal, setShowUrlModal] = useState(false);
+  const [urlInput, setUrlInput] = useState('');
+  const [selectedText, setSelectedText] = useState('');
 
   // Drag & drop state
   const [draggedBlockIndex, setDraggedBlockIndex] = useState<number | null>(null);
@@ -905,7 +910,65 @@ const RichEditor: React.FC<RichEditorProps> = ({
     setShowLinkMenu(false);
     setShowSlashMenu(false);
     setShowDateMenu(false);
+    setShowUrlModal(false);
     setEditingDateChip(null);
+  };
+
+  // Handle URL link insertion (Cmd+K)
+  const handleUrlInsert = () => {
+    if (!urlInput.trim() || !editorRef.current) {
+      setShowUrlModal(false);
+      return;
+    }
+
+    let url = urlInput.trim();
+    // Add https:// if no protocol specified
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = 'https://' + url;
+    }
+
+    const selection = window.getSelection();
+    if (selection && selectionRange) {
+      selection.removeAllRanges();
+      selection.addRange(selectionRange);
+
+      // Create the link element
+      const link = document.createElement('a');
+      link.href = url;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.className = 'text-brand-600 underline hover:text-brand-700 cursor-pointer';
+      link.contentEditable = 'false';
+
+      // If text was selected, use it as link text; otherwise use the URL
+      link.textContent = selectedText.trim() || url;
+
+      // Delete selected content and insert link
+      selectionRange.deleteContents();
+      selectionRange.insertNode(link);
+
+      // Move cursor after link
+      const space = document.createTextNode('\u00A0');
+      if (link.nextSibling) {
+        link.parentNode?.insertBefore(space, link.nextSibling);
+      } else {
+        link.parentNode?.appendChild(space);
+      }
+
+      const newRange = document.createRange();
+      newRange.setStartAfter(space);
+      newRange.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(newRange);
+
+      // Trigger save
+      handleInput({} as any);
+    }
+
+    setShowUrlModal(false);
+    setUrlInput('');
+    setSelectedText('');
+    editorRef.current.focus();
   };
 
   // Filter logic for link menu
@@ -1030,22 +1093,23 @@ const RichEditor: React.FC<RichEditorProps> = ({
         handleInput({} as any);
         return;
       }
-      // Cmd/Ctrl + K: Open link menu
+      // Cmd/Ctrl + K: Open URL link modal
       if (e.key === 'k') {
         e.preventDefault();
         const selection = window.getSelection();
         if (selection && selection.rangeCount > 0 && editorRef.current) {
           const range = selection.getRangeAt(0);
+          const text = selection.toString();
           const rect = range.getBoundingClientRect();
           const editorRect = editorRef.current.getBoundingClientRect();
           setMenuPos({
             top: rect.bottom - editorRect.top + 8 + editorRef.current.scrollTop,
-            left: rect.left - editorRect.left
+            left: Math.max(0, rect.left - editorRect.left)
           });
           setSelectionRange(range.cloneRange());
-          setShowLinkMenu(true);
-          setLinkSearch('');
-          setSelectedIndex(0);
+          setSelectedText(text);
+          setUrlInput('');
+          setShowUrlModal(true);
         }
         return;
       }
@@ -1843,6 +1907,62 @@ const RichEditor: React.FC<RichEditorProps> = ({
                  )}
                </div>
              )}
+          </div>
+        </div>
+      )}
+
+      {/* URL Link Modal (Cmd+K) */}
+      {showUrlModal && (
+        <div
+          className="absolute z-50 bg-white shadow-xl border border-slate-200 rounded-lg w-80 overflow-hidden flex flex-col animate-in fade-in zoom-in duration-150"
+          style={{ top: menuPos.top, left: menuPos.left }}
+        >
+          <div className="p-3 border-b border-slate-100">
+            <div className="flex items-center gap-2 text-sm text-slate-600 mb-2">
+              <Link2 className="w-4 h-4" />
+              <span className="font-medium">Insert Link</span>
+            </div>
+            {selectedText && (
+              <div className="text-xs text-slate-500 mb-2">
+                Text: <span className="font-medium text-slate-700">"{selectedText}"</span>
+              </div>
+            )}
+            <input
+              autoFocus
+              type="text"
+              placeholder="Paste or type URL..."
+              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
+              value={urlInput}
+              onChange={(e) => setUrlInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleUrlInsert();
+                } else if (e.key === 'Escape') {
+                  e.preventDefault();
+                  setShowUrlModal(false);
+                  editorRef.current?.focus();
+                }
+              }}
+            />
+          </div>
+          <div className="p-2 bg-slate-50 flex justify-end gap-2">
+            <button
+              className="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-800 transition-colors"
+              onClick={() => {
+                setShowUrlModal(false);
+                editorRef.current?.focus();
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              className="px-3 py-1.5 text-xs bg-brand-600 text-white rounded-md hover:bg-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!urlInput.trim()}
+              onClick={handleUrlInsert}
+            >
+              Insert Link
+            </button>
           </div>
         </div>
       )}

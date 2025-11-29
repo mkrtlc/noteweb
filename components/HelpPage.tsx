@@ -294,7 +294,7 @@ const HelpPage: React.FC = () => {
                 </tr>
                 <tr>
                   <td className="px-4 py-3"><Kbd>Cmd/Ctrl</Kbd> + <Kbd>K</Kbd></td>
-                  <td className="px-4 py-3 text-slate-600">Open link menu to insert note link</td>
+                  <td className="px-4 py-3 text-slate-600">Insert external URL link</td>
                 </tr>
                 <tr>
                   <td className="px-4 py-3"><Kbd>Cmd/Ctrl</Kbd> + <Kbd>Z</Kbd></td>
