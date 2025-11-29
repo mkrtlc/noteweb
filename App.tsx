@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import { Note, GraphData, Folder } from './types';
+import BlogList from './components/BlogList';
+import BlogPostPage from './components/BlogPost';
+import HelpPage from './components/HelpPage';
 import { extractLinks } from './utils/markdownParser';
 import { loadNotes, saveNotes, loadFolders, saveFolders } from './services/storageService';
 import {
@@ -43,7 +47,9 @@ import {
   Edit2,
   ChevronDown,
   Copy,
-  Pencil
+  Pencil,
+  BookOpen,
+  HelpCircle
 } from 'lucide-react';
 
 // --- Empty Dataset Generation ---
@@ -65,7 +71,7 @@ function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue;
 }
 
-const App: React.FC = () => {
+const NotesApp: React.FC = () => {
   // --- State ---
   const [notes, setNotes] = useState<Note[]>(generateCosmosData());
   const [folders, setFolders] = useState<Folder[]>([]);
@@ -907,6 +913,26 @@ const App: React.FC = () => {
             </>
           )}
         </div>
+
+        {/* Sidebar Footer */}
+        <div className="p-4 border-t border-slate-200 shrink-0">
+          <div className="flex items-center gap-4 text-sm text-slate-500">
+            <Link
+              to="/blog"
+              className="flex items-center gap-1.5 hover:text-brand-600 transition-colors"
+            >
+              <BookOpen className="w-4 h-4" />
+              Blog
+            </Link>
+            <Link
+              to="/help"
+              className="flex items-center gap-1.5 hover:text-brand-600 transition-colors"
+            >
+              <HelpCircle className="w-4 h-4" />
+              Help
+            </Link>
+          </div>
+        </div>
       </aside>
 
       {/* Main Content */}
@@ -1361,6 +1387,19 @@ const App: React.FC = () => {
         </div>
       )}
     </div>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<NotesApp />} />
+        <Route path="/blog" element={<BlogList />} />
+        <Route path="/blog/:slug" element={<BlogPostPage />} />
+        <Route path="/help" element={<HelpPage />} />
+      </Routes>
+    </BrowserRouter>
   );
 };
 
