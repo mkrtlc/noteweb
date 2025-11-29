@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <!-- Static Pages -->
   <url>
     <loc>https://noteweb.co/</loc>
     <lastmod>2025-11-29</lastmod>
@@ -19,8 +18,6 @@
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
-
-  <!-- Blog Posts (Dynamic) -->
   <url>
     <loc>https://noteweb.co/blog/why-connected-notes-matter</loc>
     <lastmod>2024-11-15</lastmod>
