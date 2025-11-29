@@ -1059,7 +1059,7 @@ const RichEditor: React.FC<RichEditorProps> = ({
     }
 
     // Keyboard shortcuts (Cmd/Ctrl + B, I, Z, etc.)
-    if ((e.metaKey || e.ctrlKey) && !showSlashMenu && !showLinkMenu && !showDateMenu) {
+    if ((e.metaKey || e.ctrlKey) && !showSlashMenu && !showLinkMenu && !showDateMenu && !showUrlModal) {
       // Undo: Cmd/Ctrl + Z
       if (e.key === 'z' && !e.shiftKey) {
         e.preventDefault();
@@ -1097,17 +1097,25 @@ const RichEditor: React.FC<RichEditorProps> = ({
       if (e.key === 'k') {
         e.preventDefault();
         const selection = window.getSelection();
-        if (selection && selection.rangeCount > 0 && editorRef.current) {
-          const range = selection.getRangeAt(0);
-          const text = selection.toString();
-          const rect = range.getBoundingClientRect();
+        if (editorRef.current) {
           const editorRect = editorRef.current.getBoundingClientRect();
-          setMenuPos({
-            top: rect.bottom - editorRect.top + 8 + editorRef.current.scrollTop,
-            left: Math.max(0, rect.left - editorRect.left)
-          });
-          setSelectionRange(range.cloneRange());
-          setSelectedText(text);
+          let top = 100; // Default fallback position
+          let left = 50;
+
+          if (selection && selection.rangeCount > 0) {
+            const range = selection.getRangeAt(0);
+            const rect = range.getBoundingClientRect();
+            setSelectionRange(range.cloneRange());
+            setSelectedText(selection.toString());
+
+            // Use selection position if valid, otherwise center in editor
+            if (rect.width > 0 || rect.height > 0) {
+              top = rect.bottom - editorRect.top + 8 + editorRef.current.scrollTop;
+              left = Math.max(0, rect.left - editorRect.left);
+            }
+          }
+
+          setMenuPos({ top, left });
           setUrlInput('');
           setShowUrlModal(true);
         }
