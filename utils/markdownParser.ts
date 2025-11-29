@@ -53,11 +53,16 @@ export const markdownToHtml = (markdown: string): string => {
       return `<span class="date-chip" contenteditable="false" data-date="${isoDate}">📅 ${label} (${formatted})</span>`;
     });
 
-    // Links [[Title]]
+    // Wiki Links [[Title]]
     processedLine = processedLine.replace(/\[\[(.*?)\]\]/g, (match, content) => {
       const [target, label] = content.split('|');
       const display = label || target;
       return `<span class="link-chip" contenteditable="false" data-link="${target}">${display}</span>`;
+    });
+
+    // External Links [text](url)
+    processedLine = processedLine.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, url) => {
+      return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-brand-600 underline hover:text-brand-700 cursor-pointer" contenteditable="false">${text}</a>`;
     });
 
     // Code blocks ```code```
@@ -171,12 +176,19 @@ export const htmlToMarkdown = (html: string): string => {
         return `*${Array.from(el.childNodes).map((n, i, arr) => walk(n, i > 0 ? arr[i-1] : null)).join('')}*`;
       }
 
-      // Links
+      // Wiki Links (internal)
       if (el.classList.contains('link-chip')) {
          const target = el.getAttribute('data-link');
          const text = el.textContent;
          if (target === text) return `[[${target}]]`;
          return `[[${target}|${text}]]`;
+      }
+
+      // External Links (<a> tags)
+      if (el.tagName === 'A') {
+         const href = el.getAttribute('href') || '';
+         const text = el.textContent || href;
+         return `[${text}](${href})`;
       }
 
       // Date chips
