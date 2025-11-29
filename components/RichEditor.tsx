@@ -39,6 +39,7 @@ const RichEditor: React.FC<RichEditorProps> = ({
   // URL link modal state (Cmd+K)
   const [showUrlModal, setShowUrlModal] = useState(false);
   const [urlInput, setUrlInput] = useState('');
+  const [linkTextInput, setLinkTextInput] = useState('');
   const [selectedText, setSelectedText] = useState('');
 
   // Drag & drop state
@@ -927,6 +928,9 @@ const RichEditor: React.FC<RichEditorProps> = ({
       url = 'https://' + url;
     }
 
+    // Use link text if provided, otherwise use URL
+    const displayText = linkTextInput.trim() || url;
+
     const selection = window.getSelection();
     if (selection && selectionRange) {
       selection.removeAllRanges();
@@ -940,8 +944,8 @@ const RichEditor: React.FC<RichEditorProps> = ({
       link.className = 'text-brand-600 underline hover:text-brand-700 cursor-pointer';
       link.contentEditable = 'false';
 
-      // Always use the URL as the link text
-      link.textContent = url;
+      // Use display text (can be different from URL)
+      link.textContent = displayText;
 
       // Delete selected content and insert link
       selectionRange.deleteContents();
@@ -967,6 +971,7 @@ const RichEditor: React.FC<RichEditorProps> = ({
 
     setShowUrlModal(false);
     setUrlInput('');
+    setLinkTextInput('');
     setSelectedText('');
     editorRef.current.focus();
   };
@@ -1117,6 +1122,7 @@ const RichEditor: React.FC<RichEditorProps> = ({
 
           setMenuPos({ top, left });
           setUrlInput('');
+          setLinkTextInput(selection?.toString() || '');
           setShowUrlModal(true);
         }
         return;
@@ -1930,24 +1936,51 @@ const RichEditor: React.FC<RichEditorProps> = ({
               <Link2 className="w-4 h-4" />
               <span className="font-medium">Insert Link</span>
             </div>
-            <input
-              autoFocus
-              type="text"
-              placeholder="Paste or type URL..."
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
-              value={urlInput}
-              onChange={(e) => setUrlInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  handleUrlInsert();
-                } else if (e.key === 'Escape') {
-                  e.preventDefault();
-                  setShowUrlModal(false);
-                  editorRef.current?.focus();
-                }
-              }}
-            />
+            <div className="space-y-2">
+              <div>
+                <label className="block text-xs text-slate-500 mb-1">Text</label>
+                <input
+                  autoFocus
+                  type="text"
+                  placeholder="Display text..."
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
+                  value={linkTextInput}
+                  onChange={(e) => setLinkTextInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      if (urlInput.trim()) {
+                        handleUrlInsert();
+                      }
+                    } else if (e.key === 'Escape') {
+                      e.preventDefault();
+                      setShowUrlModal(false);
+                      editorRef.current?.focus();
+                    }
+                  }}
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-500 mb-1">URL</label>
+                <input
+                  type="text"
+                  placeholder="https://..."
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
+                  value={urlInput}
+                  onChange={(e) => setUrlInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleUrlInsert();
+                    } else if (e.key === 'Escape') {
+                      e.preventDefault();
+                      setShowUrlModal(false);
+                      editorRef.current?.focus();
+                    }
+                  }}
+                />
+              </div>
+            </div>
           </div>
           <div className="p-2 bg-slate-50 flex justify-end gap-2">
             <button
