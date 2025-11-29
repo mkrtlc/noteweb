@@ -940,8 +940,8 @@ const RichEditor: React.FC<RichEditorProps> = ({
       link.className = 'text-brand-600 underline hover:text-brand-700 cursor-pointer';
       link.contentEditable = 'false';
 
-      // If text was selected, use it as link text; otherwise use the URL
-      link.textContent = selectedText.trim() || url;
+      // Always use the URL as the link text
+      link.textContent = url;
 
       // Delete selected content and insert link
       selectionRange.deleteContents();
@@ -1918,15 +1918,10 @@ const RichEditor: React.FC<RichEditorProps> = ({
           style={{ top: menuPos.top, left: menuPos.left }}
         >
           <div className="p-3 border-b border-slate-100">
-            <div className="flex items-center gap-2 text-sm text-slate-600 mb-2">
+            <div className="flex items-center gap-2 text-sm text-slate-600 mb-3">
               <Link2 className="w-4 h-4" />
               <span className="font-medium">Insert Link</span>
             </div>
-            {selectedText && (
-              <div className="text-xs text-slate-500 mb-2">
-                Text: <span className="font-medium text-slate-700">"{selectedText}"</span>
-              </div>
-            )}
             <input
               autoFocus
               type="text"
