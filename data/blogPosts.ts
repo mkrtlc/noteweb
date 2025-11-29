@@ -2,6 +2,111 @@ import { BlogPost } from '../types';
 
 export const blogPosts: BlogPost[] = [
   {
+    slug: 'what-is-noteweb',
+    title: 'What is NoteWeb? The Note-Taking App That Thinks Like You Do',
+    excerpt: 'Discover NoteWeb - a free, local-first note-taking app with wiki-style linking, beautiful graph visualization, and zero sign-up required.',
+    content: `
+# What is NoteWeb? The Note-Taking App That Thinks Like You Do
+
+NoteWeb is a modern, free note-taking application designed for people who want more than just a place to dump text. It's built around one powerful idea: **your notes should be connected, not isolated**.
+
+## Why We Built NoteWeb
+
+We were frustrated with traditional note-taking apps. You write something brilliant, save it, and... it disappears into a folder you'll never open again. Sound familiar?
+
+NoteWeb solves this by treating your notes as a **knowledge graph** rather than a file cabinet. Every note can link to any other note, and those connections become visible, explorable, and valuable over time.
+
+## Core Features
+
+### Wiki-Style Linking
+
+Type \`@\` anywhere in your note to create a link to another note. It's that simple. If the note doesn't exist yet, NoteWeb will create it for you.
+
+These aren't just hyperlinks—they're **bidirectional**. When Note A links to Note B, Note B knows about it. Open any note and instantly see everything that references it.
+
+### Beautiful Graph Visualization
+
+Toggle the graph view to see your knowledge network come alive. Every note is a node, every link is a connection. Watch your ideas form clusters and discover unexpected relationships.
+
+Switch between **2D and 3D modes** for different perspectives. Click any node to navigate directly to that note.
+
+### Rich Text Editor
+
+NoteWeb's editor is powerful yet simple:
+
+- **Slash commands** - Type \`/\` for quick formatting (headings, lists, quotes, code blocks)
+- **Keyboard shortcuts** - Cmd+B for bold, Cmd+I for italic, Cmd+Z to undo
+- **Drag & drop blocks** - Reorder your content by dragging paragraphs
+- **Auto bullet lists** - Type \`- \` and it becomes a list automatically
+
+### Date Chips & Reminders
+
+Type \`@@\` to add a date to your notes. Pick from quick options like "Tomorrow" or "Next Monday," or choose any date from the calendar. Set a specific time for reminders.
+
+### Folders & Organization
+
+Create folders to organize your notes by project, topic, or however you think. Drag notes between folders effortlessly. Links work across folders, so organization never limits connections.
+
+### Local-First & Private
+
+Your notes are stored in your browser's local storage. That means:
+
+- **No account required** - Start taking notes immediately
+- **Complete privacy** - Your data never leaves your device
+- **Works offline** - No internet needed
+- **Zero cost** - Free forever, no premium tiers
+
+## Who Is NoteWeb For?
+
+NoteWeb is perfect for:
+
+- **Students** building study notes that connect concepts across subjects
+- **Writers** organizing research and ideas for articles or books
+- **Developers** documenting projects with interconnected technical notes
+- **Researchers** creating literature reviews and connecting sources
+- **Anyone** who thinks in connections rather than hierarchies
+
+## How NoteWeb Compares
+
+| Feature | NoteWeb | Traditional Apps |
+|---------|---------|-----------------|
+| Bidirectional links | Yes | Rarely |
+| Graph visualization | 2D & 3D | No |
+| Account required | No | Usually |
+| Price | Free | Often paid |
+| Privacy | 100% local | Cloud-dependent |
+| Offline support | Yes | Sometimes |
+
+## Getting Started
+
+1. Visit [noteweb.co](https://noteweb.co)
+2. Click the **+** button to create your first note
+3. Start typing and use \`@\` to link ideas together
+4. Toggle the graph view to watch your knowledge network grow
+
+No sign-up. No credit card. No friction. Just start writing.
+
+## The Philosophy Behind NoteWeb
+
+We believe that:
+
+- **Simplicity wins** - You shouldn't need a manual to take notes
+- **Connections matter** - Ideas gain value when linked together
+- **Privacy is non-negotiable** - Your thoughts belong to you
+- **Free should mean free** - Not "free trial" or "free with limits"
+
+NoteWeb embodies these principles. It's the note-taking app we wished existed, so we built it.
+
+---
+
+Ready to start building your personal knowledge graph? Open NoteWeb and create your first connected note today.
+    `.trim(),
+    author: 'NoteWeb Team',
+    publishedAt: '2024-11-20',
+    readingTime: '5 min read',
+    tags: ['noteweb', 'features', 'note-taking', 'pkm'],
+  },
+  {
     slug: 'why-connected-notes-matter',
     title: 'Why Connected Notes Matter: The Power of Bidirectional Linking',
     excerpt: 'Discover how linking your notes together can transform the way you think, learn, and create. Learn the science behind networked thought.',
