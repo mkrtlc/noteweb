@@ -219,7 +219,10 @@ const NotesApp: React.FC = () => {
 
       if (loadedNotes.length > 0) {
         setNotes(loadedNotes);
-        setActiveNoteId(loadedNotes[0].id);
+        // Restore last active note from localStorage, or default to first note
+        const savedActiveNoteId = localStorage.getItem('noteweb_activeNoteId');
+        const noteExists = savedActiveNoteId && loadedNotes.some(n => n.id === savedActiveNoteId);
+        setActiveNoteId(noteExists ? savedActiveNoteId : loadedNotes[0].id);
         trackSessionStart(loadedNotes.length, loadedFolders.length);
       } else {
         // If no notes in file, create a welcome note
@@ -242,6 +245,13 @@ const NotesApp: React.FC = () => {
     };
     initData();
   }, []);
+
+  // Save active note ID to localStorage when it changes
+  useEffect(() => {
+    if (activeNoteId) {
+      localStorage.setItem('noteweb_activeNoteId', activeNoteId);
+    }
+  }, [activeNoteId]);
 
   // Save notes to file whenever they change
   useEffect(() => {
