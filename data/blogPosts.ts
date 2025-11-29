@@ -102,7 +102,7 @@ NoteWeb embodies these principles. It's the note-taking app we wished existed, s
 Ready to start building your personal knowledge graph? Open NoteWeb and create your first connected note today.
     `.trim(),
     author: 'NoteWeb Team',
-    publishedAt: '2024-11-20',
+    publishedAt: '2025-11-29',
     readingTime: '5 min read',
     tags: ['noteweb', 'features', 'note-taking', 'pkm'],
   },
@@ -154,7 +154,7 @@ Start building your personal knowledge graph today. Your future self will thank 
 *What connections have you discovered in your notes? Share your experience with us on Twitter.*
     `.trim(),
     author: 'NoteWeb Team',
-    publishedAt: '2024-11-15',
+    publishedAt: '2025-11-28',
     readingTime: '4 min read',
     tags: ['productivity', 'note-taking', 'pkm'],
   },
@@ -219,7 +219,7 @@ Happy note-taking!
 *Have questions? Check out our Help section or reach out on Twitter.*
     `.trim(),
     author: 'NoteWeb Team',
-    publishedAt: '2024-11-10',
+    publishedAt: '2025-11-27',
     readingTime: '3 min read',
     tags: ['tutorial', 'getting-started'],
   },
