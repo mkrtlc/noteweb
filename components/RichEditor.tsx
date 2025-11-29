@@ -1030,6 +1030,25 @@ const RichEditor: React.FC<RichEditorProps> = ({
         handleInput({} as any);
         return;
       }
+      // Cmd/Ctrl + K: Open link menu
+      if (e.key === 'k') {
+        e.preventDefault();
+        const selection = window.getSelection();
+        if (selection && selection.rangeCount > 0 && editorRef.current) {
+          const range = selection.getRangeAt(0);
+          const rect = range.getBoundingClientRect();
+          const editorRect = editorRef.current.getBoundingClientRect();
+          setMenuPos({
+            top: rect.bottom - editorRect.top + 8 + editorRef.current.scrollTop,
+            left: rect.left - editorRect.left
+          });
+          setSelectionRange(range.cloneRange());
+          setShowLinkMenu(true);
+          setLinkSearch('');
+          setSelectedIndex(0);
+        }
+        return;
+      }
     }
 
     // Handle Enter key to exit block elements (headings, lists, quotes, code blocks)
