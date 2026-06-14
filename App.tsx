@@ -30,6 +30,7 @@ import {
 import RichEditor from './components/RichEditor';
 import GraphView from './components/GraphView';
 import GraphView3D from './components/GraphView3D';
+import ErrorBoundary from './components/ErrorBoundary';
 import {
   Plus,
   Search,
@@ -1066,19 +1067,21 @@ const NotesApp: React.FC = () => {
                            </button>
                          </div>
                      </div>
-                    {graphMode === '2D' ? (
-                      <GraphView
-                        data={graphData}
-                        onNodeClick={handleNodeClick}
-                        activeNodeId={activeNoteId}
-                      />
-                    ) : (
-                      <GraphView3D
-                        data={graphData}
-                        onNodeClick={handleNodeClick}
-                        activeNodeId={activeNoteId}
-                      />
-                    )}
+                    <ErrorBoundary fallbackLabel="The graph ran into an error.">
+                      {graphMode === '2D' ? (
+                        <GraphView
+                          data={graphData}
+                          onNodeClick={handleNodeClick}
+                          activeNodeId={activeNoteId}
+                        />
+                      ) : (
+                        <GraphView3D
+                          data={graphData}
+                          onNodeClick={handleNodeClick}
+                          activeNodeId={activeNoteId}
+                        />
+                      )}
+                    </ErrorBoundary>
                   </div>
                 )}
 
