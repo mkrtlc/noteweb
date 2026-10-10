@@ -16,6 +16,7 @@ import {
   ListChecks,
   Quote,
   Plus,
+  Check,
   Cloud,
   Globe,
   Lock,
@@ -26,6 +27,7 @@ import {
 import { MarketingPage, Atmosphere } from '../components/SiteChrome';
 import { useSeo } from '../hooks/useSeo';
 import { trackFeature } from '../services/analyticsService';
+import { FREE_HIGHLIGHTS } from '../data/features';
 
 /* ------------------------------------------------------------------ */
 /* Small mock UIs (pure HTML/SVG, no screenshots)                      */
@@ -274,10 +276,10 @@ const CELLS = [
   { title: 'Your files, your format', body: 'Export plain Markdown that opens anywhere, a full JSON backup, or an AES-256 encrypted vault.', media: <MockVault /> },
 ];
 
-const FORMATS = ['Markdown', 'Wiki links', 'Plain text', 'JSON backups', 'Encrypted vaults', 'Offline app', 'PDF print', 'Share links'];
+const FORMATS = ['Markdown', 'Wiki links', 'Plain text', 'JSON backups', 'Encrypted vaults', 'Offline app', 'PDF print', 'Share links', 'Word export', 'Web pages'];
 
 const PROMISES = [
-  { quote: 'Your notes never leave your device.', by: 'Local-first by design' },
+  { quote: 'Your notes live on your device. Sync is end-to-end encrypted.', by: 'Local-first by design' },
   { quote: 'Everything exports to plain Markdown, whenever you want.', by: 'No lock-in' },
   { quote: 'No account, no ads, no tracking of what you write.', by: 'Private by default' },
 ];
@@ -358,7 +360,7 @@ const Landing: React.FC = () => {
   const [tabCycle, setTabCycle] = useState(0);
   useSeo(
     'NoteWeb: the private notebook for connected thinking',
-    'NoteWeb is a fast, private note-taking app with wiki links, backlinks, daily notes and a live knowledge graph. Local-first, works offline, no signup.',
+    'NoteWeb is a fast, private note-taking app with wiki links, backlinks, daily notes and a live knowledge graph. Local-first, works offline, no signup. Pro adds encrypted sync and publishing.',
     '/'
   );
 
@@ -441,6 +443,21 @@ const Landing: React.FC = () => {
                 <p className="mt-2 text-[14px] leading-relaxed text-[#5d6170]">{c.body}</p>
               </div>
             ))}
+          </div>
+
+          <div className="mt-14 text-center">
+            <p className="text-[13px] uppercase tracking-[0.08em] text-[#8a8e9b] mk-reveal">Also free, forever</p>
+            <div className="mt-5 flex flex-wrap justify-center gap-2 max-w-[820px] mx-auto">
+              {FREE_HIGHLIGHTS.map((f, i) => (
+                <span key={f} className="mk-pill mk-reveal" style={delay(i * 30)}>
+                  <Check className="w-3.5 h-3.5 text-[#05536c]" />
+                  {f}
+                </span>
+              ))}
+            </div>
+            <Link to="/pricing#compare" className="mt-6 inline-flex items-center gap-1 text-[14px] text-[#05536c] hover:underline mk-reveal">
+              Compare every Free and Pro feature <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
         </div>
       </section>
@@ -605,7 +622,7 @@ const Landing: React.FC = () => {
             <Link to="/pricing" onClick={cta('pro-section')} className="mk-btn mk-btn-teal mk-btn-lg">
               Get Pro from $5/month <ChevronRight className="w-4 h-4" />
             </Link>
-            <span className="text-[13px] text-[#8a8e9b]">Cancel anytime · Your notes stay yours either way</span>
+            <Link to="/pricing#compare" className="text-[13px] text-[#5d6170] hover:text-[#05536c] underline underline-offset-4">Compare Free and Pro</Link>
           </div>
         </div>
       </section>

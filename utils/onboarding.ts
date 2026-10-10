@@ -43,7 +43,7 @@ export const buildOnboardingNotes = (): Note[] => {
     ),
     make(
       'Your notes stay yours',
-      `NoteWeb has no account and no server. Notes are stored in this browser only.\n- **Backups**: export Markdown, JSON or an encrypted vault from the sidebar\n- **Trash**: deleted notes can be restored for 30 days\n- **History**: every note keeps earlier versions you can restore\nBecause nothing leaves your device, clearing browser data deletes your notes. Make a backup now and then. More in [[Welcome to NoteWeb]].`,
+      `NoteWeb has no account. Notes are stored in this browser, unless you turn on NoteWeb Pro's end-to-end encrypted sync.\n- **Backups**: export Markdown, JSON or an encrypted vault from the sidebar\n- **Trash**: deleted notes can be restored for 30 days\n- **History**: every note keeps earlier versions you can restore\nWithout sync, clearing browser data deletes your notes, so make a backup now and then (Pro can do it for you every day). More in [[Welcome to NoteWeb]].`,
       4,
       ['start']
     ),

@@ -33,6 +33,10 @@ import {
   Pencil,
   ChevronDown,
   PanelRightOpen,
+  Gem,
+  Share2,
+  History,
+  CalendarDays,
 } from 'lucide-react';
 
 interface SectionProps {
@@ -72,7 +76,7 @@ const Kbd: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 );
 
 const HelpPage: React.FC = () => {
-  useSeo('NoteWeb Help: shortcuts, linking, graph and backups', 'How to use NoteWeb: slash commands, wiki links, backlinks, the knowledge graph, shortcuts, backups and more.', '/help');
+  useSeo('NoteWeb Help: shortcuts, linking, graph, backups and Pro', 'How to use NoteWeb: slash commands, wiki links, the knowledge graph, daily notes, backups, sharing, and Pro features like encrypted sync and publishing.', '/help');
   return (
     <MarketingPage solidNav>
       <div className="bg-[#f7f7f8] pt-16 flex flex-col min-h-screen">
@@ -85,7 +89,7 @@ const HelpPage: React.FC = () => {
           </div>
           <h1 className="mk-serif text-[40px] leading-tight text-slate-900 mb-3">Help & Documentation</h1>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            Everything you need to know about NoteWeb - from basic note-taking to advanced features like graph visualization and bidirectional linking.
+            Everything you need to know about NoteWeb, from your first note to the knowledge graph, backups, sharing and NoteWeb Pro.
           </p>
         </div>
       </div>
@@ -268,6 +272,38 @@ const HelpPage: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 <tr>
+                  <td className="px-4 py-3"><Kbd>Cmd/Ctrl</Kbd> + <Kbd>P</Kbd></td>
+                  <td className="px-4 py-3 text-slate-600">Command palette: search notes and run any command</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-3"><Kbd>Cmd/Ctrl</Kbd> + <Kbd>Alt</Kbd> + <Kbd>N</Kbd></td>
+                  <td className="px-4 py-3 text-slate-600">New note</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-3"><Kbd>Cmd/Ctrl</Kbd> + <Kbd>Shift</Kbd> + <Kbd>D</Kbd></td>
+                  <td className="px-4 py-3 text-slate-600">Today's daily note</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-3"><Kbd>Cmd/Ctrl</Kbd> + <Kbd>Shift</Kbd> + <Kbd>T</Kbd></td>
+                  <td className="px-4 py-3 text-slate-600">New note from a template</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-3"><Kbd>Cmd/Ctrl</Kbd> + <Kbd>.</Kbd></td>
+                  <td className="px-4 py-3 text-slate-600">Focus mode</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-3"><Kbd>Cmd/Ctrl</Kbd> + <Kbd>{"\\"}</Kbd></td>
+                  <td className="px-4 py-3 text-slate-600">Show or hide the sidebar</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-3"><Kbd>Cmd/Ctrl</Kbd> + <Kbd>Shift</Kbd> + <Kbd>E</Kbd></td>
+                  <td className="px-4 py-3 text-slate-600">Backup & export</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-3"><Kbd>Cmd/Ctrl</Kbd> + <Kbd>/</Kbd></td>
+                  <td className="px-4 py-3 text-slate-600">All keyboard shortcuts</td>
+                </tr>
+                <tr>
                   <td className="px-4 py-3"><Kbd>Cmd/Ctrl</Kbd> + <Kbd>B</Kbd></td>
                   <td className="px-4 py-3 text-slate-600">Bold text</td>
                 </tr>
@@ -393,24 +429,37 @@ const HelpPage: React.FC = () => {
           />
         </Section>
 
-        {/* Data Storage */}
-        <Section title="Data Storage" icon={<Database className="w-5 h-5 text-brand-600" />}>
-          <FeatureCard
-            title="Local Storage"
-            description="All your notes and folders are stored locally in your browser's localStorage. No account is required, and your data never leaves your device."
-          />
-          <FeatureCard
-            title="Auto-Save"
-            description="Changes are automatically saved as you type. There's no save button needed - just start writing and your work is preserved."
-          />
-          <div className="bg-amber-50 rounded-lg border border-amber-200 p-4 mt-4">
-            <h4 className="font-medium text-amber-900 mb-2">Important Notes</h4>
-            <ul className="text-sm text-amber-800 space-y-1">
-              <li>• Clearing browser data will delete your notes</li>
-              <li>• Notes are specific to this browser - they won't sync across devices</li>
-              <li>• Consider exporting important notes periodically (coming soon)</li>
-            </ul>
-          </div>
+        {/* Daily notes, templates and tasks */}
+        <Section title="Daily Notes, Templates & Tasks" icon={<CalendarDays className="w-5 h-5 text-brand-600" />}>
+          <FeatureCard title="Daily notes" description="Press Cmd/Ctrl + Shift + D, or click Today in the sidebar, to open today's note. Use it as a journal, a log or an inbox for the day." />
+          <FeatureCard title="Templates" description="Press Cmd/Ctrl + Shift + T, or click Templates, to start a meeting note, project brief, Zettel, journal or reading note. {{date}} and {{time}} fill in automatically." />
+          <FeatureCard title="Checklists and the Tasks view" description="Type /todo to add a checklist item. Open Tasks in the sidebar to see every open item from every note in one list." />
+          <FeatureCard title="Focus, themes and stats" description="Cmd/Ctrl + . hides everything but the page. Switch light, dark or system mode and the editor font from the menus. Stats shows your writing streak and an 18-week heatmap." />
+        </Section>
+
+        {/* History, trash and backups */}
+        <Section title="History, Trash & Backups" icon={<History className="w-5 h-5 text-brand-600" />}>
+          <FeatureCard title="Stored in your browser" description="Notes are saved locally as you type, with no save button and no account. Clearing your browser's site data deletes them, so keep a backup or turn on Pro sync." />
+          <FeatureCard title="Version history" description="Every note keeps earlier versions (20 on Free, 200 on Pro). Open a note's ⋯ menu and choose Version history to compare and restore." />
+          <FeatureCard title="Trash" description="Deleted notes wait 30 days in the trash, and you can undo a delete right away." />
+          <FeatureCard title="Export and import" description="Backup & export (Cmd/Ctrl + Shift + E) saves a Markdown .zip that opens in Obsidian and other apps, a full JSON backup, or an AES-256 encrypted vault. Import works with .md, .zip, .json and vault files." />
+        </Section>
+
+        {/* Sharing */}
+        <Section title="Sharing" icon={<Share2 className="w-5 h-5 text-brand-600" />}>
+          <FeatureCard title="Snapshot links" description="Share as link packs the note into the link itself, so nothing is uploaded. Anyone with the link can read the snapshot and save a copy." />
+          <FeatureCard title="Print or PDF" description="Choose Print / PDF in a note's ⋯ menu for a clean printout or a PDF." />
+        </Section>
+
+        {/* Pro */}
+        <Section title="NoteWeb Pro" icon={<Gem className="w-5 h-5 text-brand-600" />}>
+          <FeatureCard title="Activating Pro" description="After checkout you get a license key by email. Click NoteWeb Pro in the sidebar and paste it. Do this once on each browser or device you use. Your key is your account." />
+          <FeatureCard title="Encrypted sync" description="Open Sync in the Pro menu and choose a passphrase. Notes are encrypted on your device before they are uploaded, and we cannot read them. On another device, activate your key and enter the same passphrase. We cannot recover a lost passphrase." />
+          <FeatureCard title="Publishing" description="In Share, choose Publish this note to get a page at noteweb.co/p/… Republish to update it. You can require a password (the page is encrypted in your browser), make it open only once, or let it expire after 1, 7 or 30 days." />
+          <FeatureCard title="Your public site" description="In Share, create your site at noteweb.co/u/your-name. It lists all your open published notes with search and tags. Password and view-once pages are never listed." />
+          <FeatureCard title="Private notes" description="Choose Make private in a note's ⋯ menu and set a password. The note is encrypted, hidden from search, the graph and previews, and locks again after 10 minutes." />
+          <FeatureCard title="Automatic backups, templates and export" description="Pick a folder in Backup & export for a daily backup (the last 14 are kept). Save any note as a template from its ⋯ menu. Export a note as a Word document or a web page from the same menu." />
+          <FeatureCard title="Themes" description="Choose Paper, Nord or High contrast and an accent color in the Pro menu. Each theme has a light and a dark version." />
         </Section>
 
         {/* Tips & Tricks */}

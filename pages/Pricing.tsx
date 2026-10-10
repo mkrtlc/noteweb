@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Check, ChevronRight, Loader2, Clock } from 'lucide-react';
+import { Check, ChevronRight, Loader2, Clock, Minus } from 'lucide-react';
+import { FEATURE_GROUPS } from '../data/features';
 import { CHECKOUT_MONTHLY, CHECKOUT_YEARLY, CHECKOUT_LIVE } from '../services/proService';
 import { MarketingPage, Atmosphere } from '../components/SiteChrome';
 import { useSeo } from '../hooks/useSeo';
@@ -11,10 +12,11 @@ const FREE = [
   'Wiki links, backlinks and unlinked mentions',
   '2D & 3D knowledge graph',
   'Command palette and full-text search',
-  'Daily notes and templates',
+  'Daily notes, templates, checklists and Tasks view',
   'Version history and 30-day trash',
-  'Markdown, JSON and encrypted exports',
-  'Dark mode, focus mode, offline app',
+  'Markdown, JSON and encrypted export and import',
+  'Snapshot share links and PDF print',
+  'Writing stats, focus mode, dark mode, offline app',
 ];
 
 const PRO_NOW = [
@@ -41,12 +43,13 @@ const Pricing: React.FC = () => {
   const [message, setMessage] = useState('');
   const [hp, setHp] = useState(''); // honeypot
 
-  useSeo('NoteWeb pricing: free forever, Pro from $5/month', 'NoteWeb is free for unlimited local notes. NoteWeb Pro adds end-to-end encrypted sync, publishing to the web, private notes, automatic backups and custom templates.', '/pricing');
+  useSeo('NoteWeb pricing: free forever, Pro from $5/month', 'NoteWeb is free for unlimited local notes. NoteWeb Pro adds end-to-end encrypted sync, publishing with passwords and a public site, private notes, automatic backups, Word export and themes.', '/pricing');
 
   useEffect(() => {
     trackFeature('pricing_viewed');
-    if (window.location.hash === '#early-access') {
-      setTimeout(() => document.getElementById('early-access')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
+    const target = window.location.hash.slice(1);
+    if (target === 'early-access' || target === 'compare') {
+      setTimeout(() => document.getElementById(target)?.scrollIntoView(target === 'compare' ? { block: 'start' } : { behavior: 'smooth', block: 'center' }), 300);
     }
   }, []);
 
@@ -62,12 +65,12 @@ const Pricing: React.FC = () => {
       const res = await fetch('/api/waitlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), plan, website: hp, anonId: getAnonId(), source: CHECKOUT_LIVE ? 'sync_waitlist' : 'pro_prelaunch' }),
+        body: JSON.stringify({ email: email.trim(), plan, website: hp, anonId: getAnonId(), source: CHECKOUT_LIVE ? 'attachments_waitlist' : 'pro_prelaunch' }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Something went wrong. Please try again.');
       setStatus('done');
-      setMessage(data.already ? "You're already on the list. We'll be in touch." : CHECKOUT_LIVE ? "You're on the list! We'll email you when sync launches." : "Spot reserved! We'll email you the moment Pro checkout opens.");
+      setMessage(data.already ? "You're already on the list. We'll be in touch." : CHECKOUT_LIVE ? "You're on the list! We'll email you when attachments launch." : "Spot reserved! We'll email you the moment Pro checkout opens.");
       trackFeature('pro_waitlist_joined', { plan });
     } catch (err) {
       setStatus('error');
@@ -84,6 +87,8 @@ const Pricing: React.FC = () => {
     ['Do I need an account?', 'No. Your license key is your account. Activate it on each device, pick a sync passphrase once, and your notes follow you.'],
     ['What happens if I cancel?', 'Every note stays on your devices and keeps working in Free. Pro features such as sync, publishing and automatic backups stop until you resubscribe.'],
     ['Can I cancel anytime?', 'Yes, from the customer portal in one click.'],
+    ['Who can see what I publish?', 'Only the notes you choose to publish. A page can be public, need a password, open only once or expire. Password pages are encrypted in your browser, so we cannot read them.'],
+    ['Which devices does it work on?', 'Any modern browser on Mac, Windows, Linux and phones, and it installs as an app. With Pro, activate your key and enter your sync passphrase on each device.'],
     ['How do I activate Pro?', 'After checkout you get a license key by email. Paste it into the Pro button in the app sidebar.'],
   ];
 
@@ -187,6 +192,37 @@ const Pricing: React.FC = () => {
       <section className="pb-24">
         <div className="mk-container">
           <div className="text-center">
+            <p id="compare" className="mk-eyebrow mk-reveal scroll-mt-28">Compare plans</p>
+            <h2 className="mk-h2 mt-4 mk-reveal" style={d(80)}>Every feature, side by side</h2>
+          </div>
+          <div className="mt-12 max-w-[880px] mx-auto border-t border-l border-[#e7e8ec] bg-white mk-reveal">
+            <div className="grid grid-cols-[1fr_88px_88px] sm:grid-cols-[1fr_120px_120px] border-b border-r border-[#e7e8ec] bg-[#f7f7f8] text-[12px] uppercase tracking-[0.08em] text-[#5d6170]">
+              <span className="px-4 sm:px-6 py-3">Feature</span>
+              <span className="py-3 text-center">Free</span>
+              <span className="py-3 text-center text-[#05536c]">Pro</span>
+            </div>
+            {FEATURE_GROUPS.map(g => (
+              <React.Fragment key={g.title}>
+                <p className="px-4 sm:px-6 pt-6 pb-2 border-r border-[#e7e8ec] mk-serif text-[20px]">{g.title}</p>
+                {g.rows.map(r => (
+                  <div key={r.label} className="grid grid-cols-[1fr_88px_88px] sm:grid-cols-[1fr_120px_120px] items-center border-b border-r border-[#e7e8ec] text-[14px]">
+                    <span className="px-4 sm:px-6 py-3 text-[#3a3d48]">{r.label}</span>
+                    {[r.free, r.pro].map((v, i) => (
+                      <span key={i} className="py-3 flex justify-center text-center text-[12px] text-[#3a3d48]">
+                        {typeof v === 'string' ? v : v ? <Check className={`w-4 h-4 ${i ? 'text-[#05536c]' : 'text-[#5d6170]'}`} aria-label="Included" /> : <Minus className="w-4 h-4 text-[#c4c7cf]" aria-label="Not included" />}
+                      </span>
+                    ))}
+                  </div>
+                ))}
+              </React.Fragment>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="pb-24">
+        <div className="mk-container">
+          <div className="text-center">
             <p className="mk-eyebrow mk-reveal">Questions</p>
             <h2 className="mk-h2 mt-4 mk-reveal" style={d(80)}>Good to know</h2>
           </div>
@@ -201,7 +237,7 @@ const Pricing: React.FC = () => {
 
           <div id="early-access" className="mt-20 max-w-[560px] mx-auto text-center scroll-mt-24 mk-reveal">
             <p className="mk-serif text-[24px]">
-              {CHECKOUT_LIVE ? 'Want to know when encrypted sync ships?' : 'Pro checkout opens in a few days'}
+              {CHECKOUT_LIVE ? 'Want to know when image and file attachments ship?' : 'Pro checkout opens in a few days'}
             </p>
             <p className="mt-2 text-[14px] text-[#5d6170]">One email, no spam. Unsubscribe anytime.</p>
             {status === 'done' ? (

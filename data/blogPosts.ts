@@ -234,7 +234,7 @@ Toggle the graph view to see your knowledge network visually. Watch clusters for
 Folders are optional. Notes can exist without categorization and gain meaning through links instead. This supports the emergent structure principle.
 
 ### Local and Private
-Your second brain stays on your device. No cloud sync means no privacy concerns and no subscription fees.
+Your second brain stays on your device, free and without an account. If you want it on every device, NoteWeb Pro syncs it with end-to-end encryption, so nobody else can read it.
 
 ## Getting Started: Your First 30 Days
 
@@ -330,9 +330,9 @@ Create folders to organize your notes by project, topic, or however you think. D
 Your notes are stored in your browser's local storage. That means:
 
 - **No account required** - Start taking notes immediately
-- **Complete privacy** - Your data never leaves your device
+- **Complete privacy** - Your notes stay on your device unless you turn on end-to-end encrypted sync
 - **Works offline** - No internet needed
-- **Zero cost** - Free forever, no premium tiers
+- **Zero cost** - The core app is free forever; NoteWeb Pro adds sync, publishing and more
 
 ## Who Is NoteWeb For?
 
