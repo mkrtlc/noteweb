@@ -31,7 +31,7 @@ export default tseslint.config(
     languageOptions: { globals: globals.serviceworker },
   },
   {
-    files: ['functions/**/*.js'],
+    files: ['functions/**/*.js', 'server/**/*.js'],
     languageOptions: { globals: globals.worker },
   },
   {

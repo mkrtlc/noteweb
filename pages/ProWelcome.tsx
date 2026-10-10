@@ -44,7 +44,7 @@ const ProWelcome: React.FC = () => {
           </h1>
           <p className="mt-3 text-slate-600">
             {pro
-              ? 'Pro features are unlocked on this device. Pick an accent color from the Pro menu in the sidebar.'
+              ? 'Pro features are unlocked on this device. Open the Pro menu in the sidebar to turn on sync, publishing, private notes and automatic backups.'
               : 'One last step: paste your license key to unlock Pro in this browser. Your notes never leave your device; the key is the only thing we check.'}
           </p>
         </div>

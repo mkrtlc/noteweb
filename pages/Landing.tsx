@@ -16,6 +16,12 @@ import {
   ListChecks,
   Quote,
   Plus,
+  Cloud,
+  Globe,
+  Lock,
+  HardDriveDownload,
+  BookmarkPlus,
+  History,
 } from 'lucide-react';
 import { MarketingPage, Atmosphere } from '../components/SiteChrome';
 import { useSeo } from '../hooks/useSeo';
@@ -274,6 +280,15 @@ const PROMISES = [
   { quote: 'Your notes never leave your device.', by: 'Local-first by design' },
   { quote: 'Everything exports to plain Markdown, whenever you want.', by: 'No lock-in' },
   { quote: 'No account, no ads, no tracking of what you write.', by: 'Private by default' },
+];
+
+const PRO_FEATURES = [
+  { icon: Cloud, title: 'Encrypted sync', body: 'Your notes on every computer and phone. Encrypted on your device with a passphrase only you know.' },
+  { icon: Globe, title: 'Publish to the web', body: 'Turn any note into a clean public page. Linked notes you publish link to each other.' },
+  { icon: Lock, title: 'Private notes', body: 'Lock journals and sensitive notes with a password. Hidden from search, the graph and previews.' },
+  { icon: HardDriveDownload, title: 'Automatic backups', body: 'A dated copy of everything in a folder you choose, every day, without thinking about it.' },
+  { icon: BookmarkPlus, title: 'Your own templates', body: 'Save any note as a template for meetings, reviews or briefs, and start new notes from it.' },
+  { icon: History, title: '10× version history', body: '200 saved versions per note instead of 20, plus six accent colors for the app.' },
 ];
 
 const AUDIENCES = [
@@ -561,6 +576,36 @@ const Landing: React.FC = () => {
                 {TABS[tab].panel}
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ---------- Pro ---------- */}
+      <section id="pro" className="py-24 sm:py-32 scroll-mt-16">
+        <div className="mk-container">
+          <div className="text-center">
+            <p className="mk-eyebrow mk-reveal">NoteWeb Pro</p>
+            <h2 className="mk-h2 mt-4 max-w-[680px] mx-auto mk-reveal" style={delay(80)}>
+              Take your second brain everywhere
+            </h2>
+            <p className="mt-5 max-w-[560px] mx-auto text-[15px] text-[#5d6170] mk-reveal" style={delay(160)}>
+              Free covers everything you need on one device. Pro adds sync, publishing and protection, still without an account and still private.
+            </p>
+          </div>
+          <div className="mk-bento mt-14">
+            {PRO_FEATURES.map((f, i) => (
+              <div key={f.title} className="mk-cell !p-8 mk-reveal" style={delay(i * 80)}>
+                <f.icon className="w-7 h-7 text-[#05536c]" strokeWidth={1.4} />
+                <h3 className="mk-h3 mt-5">{f.title}</h3>
+                <p className="mt-2 text-[14px] leading-relaxed text-[#5d6170]">{f.body}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 mk-reveal">
+            <Link to="/pricing" onClick={cta('pro-section')} className="mk-btn mk-btn-teal mk-btn-lg">
+              Get Pro from $5/month <ChevronRight className="w-4 h-4" />
+            </Link>
+            <span className="text-[13px] text-[#8a8e9b]">Cancel anytime · Your notes stay yours either way</span>
           </div>
         </div>
       </section>

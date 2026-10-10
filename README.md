@@ -20,7 +20,12 @@ A note-taking app with graph visualization and Notion-style markdown editing. Al
 - **Local graph** (notes within two hops), **link hover previews**, editor **font** (sans/serif/mono) and **full-width** options
 - **Installable PWA** with offline support
 - Landing page, pricing page and **NoteWeb Pro** via Polar: checkout links, license-key activation (`services/proService.ts`, validated against Polar's public endpoint), `/pro/welcome` success page, Pro accent themes and 200-version history
-- Sync waitlist (Cloudflare Pages Function + KV)
+- **Pro features** (license checked server side in `server/pro.js`, cached in D1):
+  - End-to-end encrypted sync (`services/syncService.ts`, `hooks/useSync.ts`, `functions/api/sync/[[path]].js`): PBKDF2 + AES-GCM in the browser, per-item ciphertext, last-write-wins with the losing version kept in history
+  - Publish to the web (`functions/api/publish.js`, public `/p/:slug` page via `functions/api/pages/[slug].js`)
+  - Private notes locked with a password (`services/lockService.ts`), auto-lock after 10 minutes
+  - Automatic daily backups to a chosen folder (`services/autoBackupService.ts`, File System Access API)
+  - Custom note templates (`services/templateService.ts`)
 
 ### Rich Markdown Editor
 - **Slash Commands** - Type `/` to access formatting options
@@ -75,7 +80,7 @@ Open `http://localhost:3000` in your browser.
 - D3.js (graph visualization)
 - Vite
 - Tailwind CSS (build-time, theme tokens in `index.css`)
-- Hosted on Cloudflare Pages; `functions/api/waitlist.js` needs a KV binding named `WAITLIST`
+- Hosted on Cloudflare Pages with Pages Functions: D1 binding `DB` (schema in `db/schema.sql`), KV bindings `WAITLIST` and `SALES`, secret `POLAR_WEBHOOK_SECRET`
 
 ## Building
 

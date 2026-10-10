@@ -1,15 +1,24 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Gem, Check, KeyRound, ExternalLink, Lock, Loader2 } from 'lucide-react';
+import { Gem, Check, KeyRound, ExternalLink, Lock, Loader2, Cloud, Globe, FolderSync, LayoutTemplate, History, Palette } from 'lucide-react';
 import Modal, { Button } from './ui/Modal';
 import { activateLicense, deactivateLicense, CUSTOMER_PORTAL, CHECKOUT_YEARLY, CHECKOUT_MONTHLY, CHECKOUT_LIVE } from '../services/proService';
 import { ACCENTS, applyAccent, readAccent, usePro, AccentId } from '../hooks/usePro';
 import { trackFeature } from '../services/analyticsService';
 
-const PERKS_NOW = ['6 accent color themes', '200 saved versions per note (Free keeps 20)', 'Supporter badge, and you fund development'];
-const PERKS_SOON = ['End-to-end encrypted sync across devices', 'Publish notes as web pages', 'Images and attachments'];
+export type ProAction = 'sync' | 'publish' | 'lock' | 'backup' | 'templates';
 
-const ProModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
+const FEATURES: { icon: React.ElementType; title: string; body: string; action?: ProAction; cta?: string }[] = [
+  { icon: Cloud, title: 'Encrypted sync', body: 'Your notes on every device, end-to-end encrypted with a passphrase only you know.', action: 'sync', cta: 'Set up sync' },
+  { icon: Globe, title: 'Publish to the web', body: 'Turn any note into a clean public page on noteweb.co, linked to your other published notes.', action: 'publish', cta: 'Publish current note' },
+  { icon: Lock, title: 'Private notes', body: 'Lock sensitive notes with a password. Hidden from search, graph and previews.', action: 'lock', cta: 'Lock current note' },
+  { icon: FolderSync, title: 'Automatic backups', body: 'A fresh backup in a folder you choose every day, the last 14 kept.', action: 'backup', cta: 'Choose folder' },
+  { icon: LayoutTemplate, title: 'Your own templates', body: 'Save any note as a reusable template with {{date}} placeholders.', action: 'templates', cta: 'Open templates' },
+  { icon: History, title: '10× version history', body: '200 saved versions per note instead of 20.' },
+  { icon: Palette, title: 'Accent colors', body: 'Six accent themes for light and dark mode.' },
+];
+
+const ProModal: React.FC<{ open: boolean; onClose: () => void; onAction?: (a: ProAction) => void }> = ({ open, onClose, onAction }) => {
   const { pro, state } = usePro();
   const [key, setKey] = useState('');
   const [busy, setBusy] = useState(false);
@@ -37,6 +46,23 @@ const ProModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onCl
                 <Check className="w-4 h-4 text-brand-600" /> Pro is active on this device
               </p>
               <p className="text-xs text-slate-500 mt-1 font-mono">{state?.key.replace(/^(.{12}).*(.{4})$/, '$1…$2')}</p>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-2">
+              {FEATURES.filter(f => f.action).map(f => (
+                <button
+                  key={f.title}
+                  onClick={() => {
+                    onClose();
+                    onAction?.(f.action!);
+                  }}
+                  className="text-left p-3 rounded-xl ring-1 ring-slate-200 hover:ring-brand-300 hover:bg-brand-50/40 transition"
+                >
+                  <span className="flex items-center gap-2 text-sm font-medium text-slate-800">
+                    <f.icon className="w-4 h-4 text-brand-600" /> {f.title}
+                  </span>
+                  <span className="block text-xs text-brand-700 mt-1">{f.cta} →</span>
+                </button>
+              ))}
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Accent color</p>
@@ -70,30 +96,17 @@ const ProModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onCl
           </>
         ) : (
           <>
-            <div className="grid sm:grid-cols-2 gap-4 text-sm">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Included now</p>
-                <ul className="space-y-1.5">
-                  {PERKS_NOW.map(p => (
-                    <li key={p} className="flex gap-2 text-slate-700">
-                      <Check className="w-4 h-4 text-brand-600 shrink-0 mt-0.5" />
-                      {p}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Coming to Pro</p>
-                <ul className="space-y-1.5">
-                  {PERKS_SOON.map(p => (
-                    <li key={p} className="flex gap-2 text-slate-500">
-                      <Lock className="w-4 h-4 shrink-0 mt-0.5" />
-                      {p}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
+            <ul className="space-y-3">
+              {FEATURES.map(f => (
+                <li key={f.title} className="flex gap-3">
+                  <f.icon className="w-4 h-4 mt-0.5 text-brand-600 shrink-0" />
+                  <span className="text-sm">
+                    <span className="font-medium text-slate-800">{f.title}</span>
+                    <span className="text-slate-500"> · {f.body}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
             {CHECKOUT_LIVE ? (
               <div className="grid grid-cols-2 gap-2">
                 <a href={CHECKOUT_YEARLY} onClick={() => trackFeature('checkout_started', { plan: 'yearly', where: 'app' })}>

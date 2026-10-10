@@ -63,7 +63,14 @@ import TemplatePicker from '../components/TemplatePicker';
 import TasksModal from '../components/TasksModal';
 import StatsModal from '../components/StatsModal';
 import ShareModal from '../components/ShareModal';
-import ProModal from '../components/ProModal';
+import ProModal, { ProAction } from '../components/ProModal';
+import SyncModal from '../components/SyncModal';
+import LockModal from '../components/LockModal';
+import { useSync } from '../hooks/useSync';
+import { isSessionUnlocked, lockSession, encryptContent, decryptNote } from '../services/lockService';
+import { addUserTemplate, fillTemplate, UserTemplate } from '../services/templateService';
+import { runAutoBackup } from '../services/autoBackupService';
+import { getPublishedMap, unpublishNote } from '../services/publishService';
 import { usePro, ACCENTS, applyAccent } from '../hooks/usePro';
 import Modal, { Button, Kbd, modKey } from '../components/ui/Modal';
 import Logo from '../components/Logo';
@@ -113,6 +120,13 @@ import {
   Type,
   Crosshair,
   AlertCircle,
+  Cloud,
+  CloudOff,
+  RefreshCw,
+  Lock,
+  Unlock,
+  Globe,
+  BookmarkPlus,
 } from 'lucide-react';
 
 const GraphView3D = lazy(() => import('../components/GraphView3D'));
@@ -173,7 +187,13 @@ const NotesApp: React.FC = () => {
   const [statsOpen, setStatsOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [proOpen, setProOpen] = useState(false);
+  const [syncOpen, setSyncOpen] = useState(false);
+  const [lockOpen, setLockOpen] = useState(false);
+  const [unlocked, setUnlocked] = useState(isSessionUnlocked);
+  const [plain, setPlain] = useState<{ id: string; text: string } | null>(null);
+  const pendingUnlockAction = useRef<(() => void) | null>(null);
   const { pro } = usePro();
+  const sync = useSync({ ready: !isLoading, pro, notes, folders, trash, setNotes, setFolders, setTrash });
   const [noteMenuOpen, setNoteMenuOpen] = useState(false);
   const [sortMenuOpen, setSortMenuOpen] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -215,6 +235,10 @@ const NotesApp: React.FC = () => {
   }>({ visible: false, x: 0, y: 0, noteId: null, folderId: null, type: null });
 
   const debouncedNotes = useDebounce(notes, 800);
+  const latestNotes = useRef(notes);
+  latestNotes.current = notes;
+  const latestFolders = useRef(folders);
+  latestFolders.current = folders;
   const showGraph = settings.showGraph;
 
   const updateSettings = (patch: Partial<AppSettings>) => {
@@ -280,7 +304,7 @@ const NotesApp: React.FC = () => {
   const unlinkedMentions = useMemo(() => (activeNote ? findUnlinkedMentions(debouncedNotes, activeNote) : []), [debouncedNotes, activeNote]);
 
   const outline = useMemo(() => (activeNote ? extractOutline(activeNote.content) : []), [activeNote]);
-  const words = activeNote ? wordCount(activeNote.content) : 0;
+  const words = activeNote ? wordCount(activeNote.lock ? (plain?.id === activeNote.id ? plain.text : '') : activeNote.content) : 0;
 
   // --- Graph Data ---
   const graphTopology = useMemo(
@@ -354,6 +378,40 @@ const NotesApp: React.FC = () => {
     };
     initData();
   }, []);
+
+  // Private notes: track the session lock, and decrypt the open private note when unlocked.
+  useEffect(() => {
+    const onLock = () => {
+      setUnlocked(isSessionUnlocked());
+      if (!isSessionUnlocked()) setPlain(null);
+    };
+    window.addEventListener('noteweb-lock-changed', onLock);
+    return () => window.removeEventListener('noteweb-lock-changed', onLock);
+  }, []);
+
+  const activeLockedId = activeNote?.lock ? activeNote.id : null;
+  useEffect(() => {
+    if (!activeLockedId || !unlocked) return;
+    if (plain?.id === activeLockedId) return;
+    const note = latestNotes.current.find(n => n.id === activeLockedId);
+    if (!note) return;
+    decryptNote(note)
+      .then(text => setPlain({ id: activeLockedId, text }))
+      .catch(() => toast("Couldn't open this private note with the current password."));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeLockedId, unlocked]);
+
+  // Pro: daily backup to the chosen folder.
+  useEffect(() => {
+    if (isLoading || !pro) return;
+    const tick = () => runAutoBackup(latestNotes.current, latestFolders.current).catch(() => undefined);
+    const first = setTimeout(tick, 5000);
+    const t = setInterval(tick, 60 * 60 * 1000);
+    return () => {
+      clearTimeout(first);
+      clearInterval(t);
+    };
+  }, [isLoading, pro]);
 
   // Safety nudges: back up regularly, and ask the browser not to evict storage.
   const persistAsked = useRef(false);
@@ -480,6 +538,74 @@ const NotesApp: React.FC = () => {
     trackFeature('template_used', { template: t.id });
   };
 
+  const createFromUserTemplate = (t: UserTemplate) => {
+    addNote({ title: fillTemplate(t.name), content: fillTemplate(t.content), tags: t.tags });
+    trackFeature('template_used', { template: 'custom' });
+  };
+
+  /** Runs a Pro-only action, or opens the upgrade dialog. */
+  const requirePro = (feature: string, run: () => void) => {
+    if (pro) return run();
+    trackFeature('pro_feature_gate', { feature });
+    setProOpen(true);
+  };
+
+  /** Runs an action that needs the private-notes key, asking for the password first if needed. */
+  const withUnlockedSession = (run: () => void) => {
+    if (isSessionUnlocked()) return run();
+    pendingUnlockAction.current = run;
+    setLockOpen(true);
+  };
+
+  const makePrivate = (note: Note) =>
+    requirePro('private_notes', () =>
+      withUnlockedSession(async () => {
+        const lock = await encryptContent(note.content);
+        setPlain({ id: note.id, text: note.content });
+        updateNote(note.id, { lock, content: '' });
+        deleteHistory(note.id); // earlier versions held plaintext
+        if (getPublishedMap()[note.id]) unpublishNote(note.id).catch(() => undefined);
+        trackFeature('note_locked');
+        toast(`“${note.title}” is now private`);
+      })
+    );
+
+  const removeLock = (note: Note) =>
+    withUnlockedSession(async () => {
+      try {
+        const text = await decryptNote(note);
+        updateNote(note.id, { content: text, lock: undefined });
+        setPlain(null);
+        toast('Lock removed');
+      } catch {
+        toast("Couldn't decrypt this note with the current password.");
+      }
+    });
+
+  const saveAsTemplate = (note: Note) =>
+    requirePro('templates', () => {
+      if (note.lock) return toast("Private notes can't be saved as templates.");
+      addUserTemplate({ name: note.title || 'Untitled template', content: note.content, tags: note.tags });
+      trackFeature('template_saved');
+      toast(`Saved “${note.title}” as a template`, { label: 'Open templates', run: () => setTemplatesOpen(true) });
+    });
+
+  /** Joining an existing sync vault: this device's notes go to the trash (restorable). */
+  const replaceLocalWithSynced = () => {
+    const now = Date.now();
+    setTrash(prev => [...prev, ...notes.map(note => ({ note, deletedAt: now }))]);
+    setNotes([]);
+    setFolders([]);
+  };
+
+  const handleProAction = (a: ProAction) => {
+    if (a === 'sync') setSyncOpen(true);
+    else if (a === 'publish') setShareOpen(true);
+    else if (a === 'backup') setBackupOpen(true);
+    else if (a === 'templates') setTemplatesOpen(true);
+    else if (a === 'lock' && activeNote) makePrivate(activeNote);
+  };
+
   const openDailyNote = () => {
     const title = todayTitle();
     const existing = notes.find(n => n.title === title);
@@ -496,8 +622,22 @@ const NotesApp: React.FC = () => {
   };
 
   const lastActivityBump = useRef(0);
+  const encryptSeq = useRef(0);
   const updateActiveNote = (updates: Partial<Note>) => {
     if (!activeNote) return;
+    if (activeNote.lock && updates.content !== undefined) {
+      // Private note: keep plaintext in memory only, store ciphertext.
+      const { content, ...rest } = updates;
+      const id = activeNote.id;
+      setPlain({ id, text: content });
+      const seq = ++encryptSeq.current;
+      encryptContent(content)
+        .then(lock => {
+          if (seq === encryptSeq.current) updateNote(id, { ...rest, lock, content: '' });
+        })
+        .catch(() => toast('Private notes locked. Unlock to keep editing.'));
+      return;
+    }
     updateNote(activeNote.id, updates);
     if (updates.content !== undefined && Date.now() - lastActivityBump.current > 10 * 60 * 1000) {
       lastActivityBump.current = Date.now();
@@ -567,7 +707,8 @@ const NotesApp: React.FC = () => {
     const note = trashRef.current.find(t => t.note.id === noteId)?.note || fallback;
     if (!note) return;
     setTrash(prev => prev.filter(t => t.note.id !== noteId));
-    setNotes(current => (current.some(n => n.id === note.id) ? current : [note, ...current]));
+    const restored = { ...note, updatedAt: Date.now() };
+    setNotes(current => (current.some(n => n.id === note.id) ? current : [restored, ...current]));
     setActiveNoteId(note.id);
     trackFeature('note_restored');
   };
@@ -823,6 +964,11 @@ const NotesApp: React.FC = () => {
       run: () => (pro ? applyAccent(a.id) : setProOpen(true)),
     })),
     { id: 'shortcuts', label: 'Keyboard shortcuts', icon: <Keyboard className="w-4 h-4" />, shortcut: `${modKey} /`, run: () => setShortcutsOpen(true) },
+    { id: 'sync', label: sync.config.enabled ? 'Sync now' : 'Set up encrypted sync (Pro)', icon: <Cloud className="w-4 h-4" />, keywords: 'devices cloud backup', run: () => (sync.config.enabled ? sync.syncNow() : setSyncOpen(true)) },
+    { id: 'publish', label: 'Publish current note to the web (Pro)', icon: <Globe className="w-4 h-4" />, keywords: 'share website page blog', run: () => setShareOpen(true) },
+    { id: 'private', label: activeNote?.lock ? 'Remove lock from current note' : 'Make current note private (Pro)', icon: <Lock className="w-4 h-4" />, keywords: 'lock password encrypt hide', run: () => activeNote && (activeNote.lock ? removeLock(activeNote) : makePrivate(activeNote)) },
+    { id: 'lock-now', label: 'Lock private notes now', icon: <Lock className="w-4 h-4" />, keywords: 'hide', run: () => lockSession() },
+    { id: 'save-template', label: 'Save current note as template (Pro)', icon: <BookmarkPlus className="w-4 h-4" />, keywords: 'reuse', run: () => activeNote && saveAsTemplate(activeNote) },
     { id: 'pro', label: pro ? 'NoteWeb Pro: accent colors & subscription' : 'Upgrade to NoteWeb Pro / activate license', icon: <Gem className="w-4 h-4" />, keywords: 'pricing upgrade license key accent color theme', run: () => setProOpen(true) },
   ];
 
@@ -880,14 +1026,16 @@ const NotesApp: React.FC = () => {
           dragOverNote === note.id ? 'ring-1 ring-brand-400' : active ? 'bg-white shadow-sm ring-1 ring-slate-200' : 'hover:bg-slate-100'
         } ${draggedNote === note.id ? 'opacity-50' : ''}`}
       >
-        {note.pinned ? (
+        {note.lock ? (
+          <Lock className={`w-4 h-4 mt-0.5 shrink-0 ${active ? 'text-brand-600' : 'text-slate-400'}`} />
+        ) : note.pinned ? (
           <Star className={`w-4 h-4 mt-0.5 shrink-0 ${active ? 'text-amber-500' : 'text-amber-400'}`} fill="currentColor" />
         ) : (
           <FileText className={`w-4 h-4 mt-0.5 shrink-0 ${active ? 'text-brand-600' : 'text-slate-400'}`} />
         )}
         <div className="overflow-hidden w-full">
           <h3 className={`text-sm font-medium truncate ${active ? 'text-slate-900' : 'text-slate-700'}`}>{note.title || 'Untitled'}</h3>
-          <p className="text-xs text-slate-400 truncate mt-0.5">{plainText(note.content).slice(0, 60) || 'No content'}</p>
+          <p className="text-xs text-slate-400 truncate mt-0.5">{note.lock ? 'Private note' : plainText(note.content).slice(0, 60) || 'No content'}</p>
         </div>
       </button>
     );
@@ -1262,6 +1410,15 @@ const NotesApp: React.FC = () => {
                 <button className={menuItem} onClick={() => { setHistoryOpen(true); setNoteMenuOpen(false); }}>
                   <History className="w-4 h-4 text-slate-400" /> Version history
                 </button>
+                <button className={menuItem} onClick={() => { setNoteMenuOpen(false); if (activeNote.lock) removeLock(activeNote); else makePrivate(activeNote); }}>
+                  {activeNote.lock ? <Unlock className="w-4 h-4 text-slate-400" /> : <Lock className="w-4 h-4 text-slate-400" />}
+                  {activeNote.lock ? 'Remove lock' : 'Make private'}
+                  {!pro && !activeNote.lock && <span className="ml-auto text-[10px] text-brand-600">PRO</span>}
+                </button>
+                <button className={menuItem} onClick={() => { setNoteMenuOpen(false); saveAsTemplate(activeNote); }}>
+                  <BookmarkPlus className="w-4 h-4 text-slate-400" /> Save as template
+                  {!pro && <span className="ml-auto text-[10px] text-brand-600">PRO</span>}
+                </button>
                 <button className={menuItem} onClick={() => { duplicateNote(activeNote.id); setNoteMenuOpen(false); }}>
                   <Copy className="w-4 h-4 text-slate-400" /> Duplicate
                 </button>
@@ -1390,15 +1547,28 @@ const NotesApp: React.FC = () => {
                   </div>
 
                   <div className={`flex-1 min-h-0 ${settings.wideEditor ? 'max-w-5xl' : 'max-w-3xl'} w-full mx-auto nw-font-${settings.editorFont}`}>
-                    <RichEditor
-                      key={activeNote.id}
-                      noteId={activeNote.id}
-                      initialContent={activeNote.content}
-                      availableNotes={notes}
-                      onChange={md => updateActiveNote({ content: md })}
-                      onLinkClick={handleLinkClick}
-                      placeholder="Start writing… Type / for blocks, @ to link a note."
-                    />
+                    {activeNote.lock && !(unlocked && plain?.id === activeNote.id) ? (
+                      <div className="h-full flex flex-col items-center justify-center text-center px-6">
+                        <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center">
+                          <Lock className="w-5 h-5 text-slate-500" />
+                        </div>
+                        <p className="mt-4 font-semibold text-slate-800">This note is private</p>
+                        <p className="mt-1 text-sm text-slate-500 max-w-xs">Its content is encrypted on this device and hidden from search, the graph and previews.</p>
+                        <Button variant="primary" className="mt-5" onClick={() => setLockOpen(true)}>
+                          <Unlock className="w-4 h-4" /> Unlock
+                        </Button>
+                      </div>
+                    ) : (
+                      <RichEditor
+                        key={`${activeNote.id}-${activeNote.lock ? 'p' : 'n'}`}
+                        noteId={activeNote.id}
+                        initialContent={activeNote.lock ? plain?.text || '' : activeNote.content}
+                        availableNotes={notes}
+                        onChange={md => updateActiveNote({ content: md })}
+                        onLinkClick={handleLinkClick}
+                        placeholder="Start writing… Type / for blocks, @ to link a note."
+                      />
+                    )}
                   </div>
 
                   {/* Status bar */}
@@ -1408,10 +1578,29 @@ const NotesApp: React.FC = () => {
                       <span>{readingMinutes(words)} min read</span>
                       <span className="hidden sm:inline">Edited {relativeTime(activeNote.updatedAt)}</span>
                     </span>
-                    <button onClick={() => setBackupOpen(true)} className="flex items-center gap-1 hover:text-slate-600" title="Stored only on this device. Click to back up.">
-                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                      Saved on this device
-                    </button>
+                    {pro && sync.config.enabled ? (
+                      <button onClick={() => setSyncOpen(true)} className="flex items-center gap-1 hover:text-slate-600" title="End-to-end encrypted sync">
+                        {sync.status === 'syncing' ? (
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        ) : sync.status === 'error' ? (
+                          <CloudOff className="w-3.5 h-3.5 text-amber-500" />
+                        ) : (
+                          <Cloud className="w-3.5 h-3.5 text-emerald-500" />
+                        )}
+                        {sync.status === 'syncing'
+                          ? 'Syncing…'
+                          : sync.status === 'error'
+                            ? 'Sync paused'
+                            : sync.config.lastSyncAt
+                              ? `Synced ${relativeTime(sync.config.lastSyncAt)}`
+                              : 'Sync on'}
+                      </button>
+                    ) : (
+                      <button onClick={() => setBackupOpen(true)} className="flex items-center gap-1 hover:text-slate-600" title="Stored only on this device. Click to back up.">
+                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                        Saved on this device
+                      </button>
+                    )}
                   </div>
                 </>
               )
@@ -1674,7 +1863,7 @@ const NotesApp: React.FC = () => {
         onCreateNote={title => createNote(title)}
         onSearch={q => trackFeature('search_performed', { length: q.length })}
       />
-      <BackupModal open={backupOpen} onClose={() => setBackupOpen(false)} notes={notes} folders={folders} activeNote={activeNote} onImport={handleImport} />
+      <BackupModal open={backupOpen} onClose={() => setBackupOpen(false)} notes={notes} folders={folders} activeNote={activeNote} onImport={handleImport} pro={pro} onUpgrade={() => setProOpen(true)} />
       <TrashModal
         open={trashOpen}
         onClose={() => setTrashOpen(false)}
@@ -1685,11 +1874,30 @@ const NotesApp: React.FC = () => {
       />
       <HistoryModal open={historyOpen} onClose={() => setHistoryOpen(false)} note={activeNote} onRestore={restoreSnapshot} onUpgrade={() => setProOpen(true)} />
       <ShortcutsModal open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
-      <TemplatePicker open={templatesOpen} onClose={() => setTemplatesOpen(false)} onPick={createFromTemplate} />
+      <TemplatePicker open={templatesOpen} onClose={() => setTemplatesOpen(false)} onPick={createFromTemplate} onPickUser={createFromUserTemplate} pro={pro} onUpgrade={() => setProOpen(true)} />
       <TasksModal open={tasksOpen} onClose={() => setTasksOpen(false)} notes={notes} onToggle={toggleTask} onOpenNote={openNote} />
       <StatsModal open={statsOpen} onClose={() => setStatsOpen(false)} notes={notes} />
-      <ShareModal open={shareOpen} onClose={() => setShareOpen(false)} note={activeNote} />
-      <ProModal open={proOpen} onClose={() => setProOpen(false)} />
+      <ShareModal open={shareOpen} onClose={() => setShareOpen(false)} note={activeNote} notes={notes} pro={pro} onUpgrade={() => setProOpen(true)} />
+      <ProModal open={proOpen} onClose={() => setProOpen(false)} onAction={handleProAction} />
+      <SyncModal
+        open={syncOpen}
+        onClose={() => setSyncOpen(false)}
+        pro={pro}
+        status={sync.status}
+        onSyncNow={sync.syncNow}
+        onUpgrade={() => { setSyncOpen(false); setProOpen(true); }}
+        onReplaceLocal={replaceLocalWithSynced}
+        localNoteCount={notes.length}
+      />
+      <LockModal
+        open={lockOpen}
+        onClose={() => setLockOpen(false)}
+        onUnlocked={() => {
+          const run = pendingUnlockAction.current;
+          pendingUnlockAction.current = null;
+          run?.();
+        }}
+      />
 
       <Modal
         open={showFolderModal}

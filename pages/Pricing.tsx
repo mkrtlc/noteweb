@@ -17,9 +17,18 @@ const FREE = [
   'Dark mode, focus mode, offline app',
 ];
 
-const PRO_NOW = ['Everything in Free', '6 accent color themes', '200 saved versions per note (Free: 20)', 'Supporter badge, and you fund development'];
+const PRO_NOW = [
+  'Everything in Free',
+  'End-to-end encrypted sync across all your devices',
+  'Publish notes as clean public web pages',
+  'Private notes locked with a password',
+  'Automatic daily backups to a folder you choose',
+  'Save your own note templates',
+  '200 saved versions per note (Free: 20)',
+  '6 accent color themes',
+];
 
-const PRO_SOON = ['End-to-end encrypted sync across devices', 'Publish notes as public web pages', 'Images and file attachments'];
+const PRO_SOON = ['Images and file attachments'];
 
 type Status = 'idle' | 'sending' | 'done' | 'error';
 
@@ -30,7 +39,7 @@ const Pricing: React.FC = () => {
   const [message, setMessage] = useState('');
   const [hp, setHp] = useState(''); // honeypot
 
-  useSeo('NoteWeb pricing: free forever, Pro from $5/month', 'NoteWeb is free for unlimited local notes. NoteWeb Pro adds accent themes, longer version history and upcoming encrypted sync and publishing.', '/pricing');
+  useSeo('NoteWeb pricing: free forever, Pro from $5/month', 'NoteWeb is free for unlimited local notes. NoteWeb Pro adds end-to-end encrypted sync, publishing to the web, private notes, automatic backups and custom templates.', '/pricing');
 
   useEffect(() => {
     trackFeature('pricing_viewed');
@@ -69,8 +78,10 @@ const Pricing: React.FC = () => {
 
   const FAQ: [string, string][] = [
     ['Is Free really free?', 'Yes. Unlimited notes, every core feature, no ads and no trial that runs out.'],
-    ['Will Pro read my notes?', 'No. Pro is a license check only. Your notes stay in your browser, and sync will be end-to-end encrypted.'],
-    ['Can I cancel anytime?', 'Yes, from the customer portal in one click. Your notes are never affected.'],
+    ['Will Pro read my notes?', 'No. Sync is end-to-end encrypted: notes are encrypted in your browser with a passphrase only you know, so our server stores data it cannot read.'],
+    ['Do I need an account?', 'No. Your license key is your account. Activate it on each device, pick a sync passphrase once, and your notes follow you.'],
+    ['What happens if I cancel?', 'Every note stays on your devices and keeps working in Free. Pro features such as sync, publishing and automatic backups stop until you resubscribe.'],
+    ['Can I cancel anytime?', 'Yes, from the customer portal in one click.'],
     ['How do I activate Pro?', 'After checkout you get a license key by email. Paste it into the Pro button in the app sidebar.'],
   ];
 
@@ -84,7 +95,7 @@ const Pricing: React.FC = () => {
             Free for thinking. Pro for going further.
           </h1>
           <p className="mt-5 max-w-[540px] mx-auto text-[15px] text-white/80 mk-fade-late" style={{ animationDelay: '240ms' }}>
-            Everything you need for a private second brain is free, forever. Pro adds polish today and funds what's next.
+            Everything you need for a private second brain is free, forever. Pro takes it to every device, onto the web and behind a lock.
           </p>
           <div className="mt-10 inline-flex border border-white/25 p-1 text-[13px] mk-fade-late" style={{ animationDelay: '360ms' }}>
             {(['monthly', 'yearly'] as const).map(p => (
@@ -127,7 +138,7 @@ const Pricing: React.FC = () => {
             <div className="relative border-r border-b border-[#e7e8ec] p-8 sm:p-10 flex flex-col bg-[linear-gradient(180deg,#f2f8fa_0%,#ffffff_60%)]">
               <span className="absolute top-0 left-0 right-0 h-[2px] bg-[#ec7a4b]" />
               <p className="mk-eyebrow">Pro</p>
-              <h2 className="mk-serif text-[30px] mt-2">More room, more polish</h2>
+              <h2 className="mk-serif text-[30px] mt-2">Everywhere, published, protected</h2>
               <p className="mt-6 flex items-baseline gap-2">
                 <span key={plan} className="mk-serif text-[56px] leading-none mk-panel-enter">{price.amount}</span>
                 <span className="text-[13px] text-[#8a8e9b]">{price.note}</span>

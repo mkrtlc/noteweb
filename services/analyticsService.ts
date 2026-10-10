@@ -221,7 +221,14 @@ export const trackFeature = (
     | 'stats_opened'
     | 'checkout_started'
     | 'pro_activated'
-    | 'checkout_completed',
+    | 'checkout_completed'
+    | 'sync_enabled'
+    | 'note_published'
+    | 'note_unpublished'
+    | 'note_locked'
+    | 'template_saved'
+    | 'autobackup_enabled'
+    | 'pro_feature_gate',
   params?: Record<string, string | number | boolean>
 ) => {
   pushEvent(eventName, params);

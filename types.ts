@@ -8,6 +8,12 @@ export interface Note {
   updatedAt: number;
   createdAt: number;
   pinned?: boolean; // Shown in the Favorites section
+  lock?: NoteLock; // Pro: content encrypted with the private-notes password
+}
+
+export interface NoteLock {
+  iv: string;
+  ct: string; // AES-GCM ciphertext of the note's markdown
 }
 
 export interface TrashedNote {

@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react';
-import { Download, Upload, Lock, FileArchive, FileJson, ShieldCheck, FileText } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Download, Upload, Lock, FileArchive, FileJson, ShieldCheck, FileText, FolderSync, Gem } from 'lucide-react';
 import Modal, { Button } from './ui/Modal';
 import { Note, Folder } from '../types';
 import {
@@ -14,6 +14,16 @@ import {
 } from '../services/backupService';
 import { storageUsageBytes, markBackupDone, requestPersistentStorage } from '../services/storageService';
 import { trackFeature } from '../services/analyticsService';
+import {
+  isAutoBackupSupported,
+  getAutoBackupMeta,
+  chooseBackupFolder,
+  disableAutoBackup,
+  runAutoBackup,
+  backupFolderPermission,
+  regrantBackupFolder,
+} from '../services/autoBackupService';
+import { relativeTime } from '../utils/noteUtils';
 
 interface Props {
   open: boolean;
@@ -22,9 +32,31 @@ interface Props {
   folders: Folder[];
   activeNote: Note | null;
   onImport: (result: ImportResult) => { added: number; updated: number };
+  pro: boolean;
+  onUpgrade: () => void;
 }
 
-const BackupModal: React.FC<Props> = ({ open, onClose, notes, folders, activeNote, onImport }) => {
+const BackupModal: React.FC<Props> = ({ open, onClose, notes, folders, activeNote, onImport, pro, onUpgrade }) => {
+  const [auto, setAuto] = useState(getAutoBackupMeta);
+  const [perm, setPerm] = useState<string>('missing');
+  useEffect(() => {
+    if (!open) return;
+    setAuto(getAutoBackupMeta());
+    backupFolderPermission().then(setPerm).catch(() => setPerm('missing'));
+  }, [open]);
+
+  const enableAuto = async () => {
+    try {
+      await chooseBackupFolder();
+      await runAutoBackup(notes, folders, true);
+      setAuto(getAutoBackupMeta());
+      setPerm('granted');
+      trackFeature('autobackup_enabled');
+    } catch (e) {
+      if ((e as Error).name !== 'AbortError') setStatus({ kind: 'error', text: (e as Error).message });
+    }
+  };
+
   const fileRef = useRef<HTMLInputElement>(null);
   const [password, setPassword] = useState('');
   const [password2, setPassword2] = useState('');
@@ -130,6 +162,48 @@ const BackupModal: React.FC<Props> = ({ open, onClose, notes, folders, activeNot
           </button>
         )}
         {persisted === true && <p className="text-xs text-emerald-600">✓ Your browser will keep NoteWeb's storage even when disk space is low.</p>}
+
+        <section>
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-2">
+            Automatic backups <span className="normal-case tracking-normal text-[10px] px-1.5 py-0.5 rounded bg-brand-50 text-brand-700">Pro</span>
+          </h3>
+          {!pro ? (
+            <button onClick={() => { onClose(); onUpgrade(); }} className="w-full flex items-start gap-3 p-3 rounded-xl ring-1 ring-slate-200 hover:ring-brand-300 text-left">
+              <Gem className="w-5 h-5 text-brand-600 mt-0.5" />
+              <span>
+                <span className="block text-sm font-medium text-slate-800">Back up to a folder every day, automatically</span>
+                <span className="block text-xs text-slate-500 mt-0.5">Pick a folder (iCloud Drive, Dropbox, a USB drive). NoteWeb keeps the last 14 daily backups there.</span>
+              </span>
+            </button>
+          ) : !isAutoBackupSupported() ? (
+            <p className="text-sm text-slate-500">Automatic folder backups need Chrome, Edge, Brave or Arc on a computer. Encrypted sync keeps an off-device copy everywhere else.</p>
+          ) : auto.enabled ? (
+            <div className="p-3 rounded-xl ring-1 ring-slate-200 space-y-2">
+              <p className="flex items-center gap-2 text-sm text-slate-800">
+                <FolderSync className="w-4 h-4 text-emerald-600" /> Daily backups to <span className="font-medium">{auto.folderName}</span>
+              </p>
+              <p className="text-xs text-slate-500">{auto.lastBackupAt ? `Last backup ${relativeTime(auto.lastBackupAt)}` : 'No backup yet'} · keeps the latest 14</p>
+              <div className="flex flex-wrap gap-2">
+                {perm !== 'granted' ? (
+                  <Button variant="primary" onClick={async () => { if (await regrantBackupFolder()) { setPerm('granted'); await runAutoBackup(notes, folders, true); setAuto(getAutoBackupMeta()); } }}>
+                    Allow folder access
+                  </Button>
+                ) : (
+                  <Button onClick={async () => { await runAutoBackup(notes, folders, true); setAuto(getAutoBackupMeta()); setStatus({ kind: 'ok', text: 'Backup written.' }); }}>
+                    Back up now
+                  </Button>
+                )}
+                <Button variant="ghost" onClick={async () => { await disableAutoBackup(); setAuto(getAutoBackupMeta()); }}>
+                  Turn off
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <Button variant="primary" onClick={enableAuto}>
+              <FolderSync className="w-4 h-4" /> Choose backup folder
+            </Button>
+          )}
+        </section>
 
         <section>
           <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Export</h3>
