@@ -14,12 +14,13 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const DOMAIN = 'https://noteweb.co';
+const DOMAIN = 'https://www.noteweb.co';
 const TODAY = new Date().toISOString().split('T')[0];
 
 // Static pages configuration
 const staticPages = [
   { path: '/', changefreq: 'daily', priority: '1.0' },
+  { path: '/pricing', changefreq: 'monthly', priority: '0.8' },
   { path: '/blog', changefreq: 'weekly', priority: '0.8' },
   { path: '/help', changefreq: 'monthly', priority: '0.7' },
 ];

@@ -7,6 +7,12 @@ import { RotateCcw, ZoomIn, ZoomOut, LocateFixed } from 'lucide-react';
 // Cast to constructor type
 const ForceGraph3D = ForceGraph3DLib as unknown as new (element: HTMLElement) => any;
 
+// Resolve a design token (see index.css) to a color the canvas/WebGL can use.
+const token = (name: string) => {
+  const v = getComputedStyle(document.documentElement).getPropertyValue(`--${name}`).trim();
+  return v ? `rgb(${v.split(/\s+/).join(',')})` : '#64748b';
+};
+
 // Create a text sprite for node labels
 function createTextSprite(text: string, isActive: boolean) {
   const canvas = document.createElement('canvas');
@@ -18,7 +24,7 @@ function createTextSprite(text: string, isActive: boolean) {
 
   // Configure text style
   context.font = `${isActive ? 'bold ' : ''}24px Arial, sans-serif`;
-  context.fillStyle = isActive ? '#0f172a' : '#64748b';
+  context.fillStyle = isActive ? token('slate-900') : token('slate-500');
   context.textAlign = 'center';
   context.textBaseline = 'middle';
 
@@ -87,7 +93,7 @@ const GraphView3D: React.FC<GraphView3DProps> = React.memo(({ data, onNodeClick,
     const graph = new ForceGraph3D(container)
       .width(width)
       .height(height)
-      .backgroundColor('#f8fafc') // slate-50
+      .backgroundColor(token('slate-100'))
       .nodeThreeObject((node: any) => {
         // Create a group to hold sphere + label
         const group = new THREE.Group();
@@ -96,7 +102,7 @@ const GraphView3D: React.FC<GraphView3DProps> = React.memo(({ data, onNodeClick,
         const isActive = node.id === activeNodeId;
         const sphereGeometry = new THREE.SphereGeometry(isActive ? 5 : 3);
         const sphereMaterial = new THREE.MeshLambertMaterial({
-          color: isActive ? '#0ea5e9' : '#64748b',
+          color: isActive ? token('brand-600') : token('slate-400'),
           transparent: true,
           opacity: 0.9
         });
@@ -111,7 +117,7 @@ const GraphView3D: React.FC<GraphView3DProps> = React.memo(({ data, onNodeClick,
         return group;
       })
       .nodeLabel(() => '') // Disable default hover label since we show text always
-      .linkColor(() => '#cbd5e1')
+      .linkColor(() => token('slate-300'))
       .linkWidth(1)
       .linkOpacity(0.6)
       .onNodeClick((node: any) => {
@@ -175,7 +181,7 @@ const GraphView3D: React.FC<GraphView3DProps> = React.memo(({ data, onNodeClick,
       const isActive = node.id === activeNodeId;
       const sphereGeometry = new THREE.SphereGeometry(isActive ? 5 : 3);
       const sphereMaterial = new THREE.MeshLambertMaterial({
-        color: isActive ? '#0ea5e9' : '#64748b',
+        color: isActive ? token('brand-600') : token('slate-400'),
         transparent: true,
         opacity: 0.9
       });

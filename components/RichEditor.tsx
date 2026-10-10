@@ -1993,7 +1993,7 @@ const RichEditor: React.FC<RichEditorProps> = ({
               Cancel
             </button>
             <button
-              className="px-3 py-1.5 text-xs bg-brand-600 text-white rounded-md hover:bg-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-1.5 text-xs bg-brand-600 text-on-accent rounded-md hover:bg-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={!urlInput.trim()}
               onClick={handleUrlInsert}
             >

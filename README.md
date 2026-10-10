@@ -4,6 +4,17 @@ A note-taking app with graph visualization and Notion-style markdown editing. Al
 
 ## Features
 
+### New in v2
+- **Command palette** (`⌘P` / `Ctrl+P`): ranked full-text search with highlights, plus every action
+- **Daily notes** (`⌘⇧D`) and **templates** (meeting, project, Zettel, journal, reading)
+- **Favorites, tags and sorting** in the sidebar, tag filter, tag editor on every note
+- **Version history** per note and a **30-day trash** with undo
+- **Backup & export**: Markdown `.zip` (Obsidian-compatible), JSON, and AES-256 encrypted `.nwvault`; import `.md`, `.zip`, `.json`, `.nwvault`
+- **Links panel**: backlinks plus *unlinked mentions* with one-click linking; **outline** of headings
+- **Dark mode** (light / dark / system), **focus mode**, word count and reading time
+- **Installable PWA** with offline support
+- Landing page, pricing page and Pro waitlist (Cloudflare Pages Function + KV)
+
 ### Rich Markdown Editor
 - **Slash Commands** - Type `/` to access formatting options
   - Headings (H1, H2, H3)
@@ -56,7 +67,8 @@ Open `http://localhost:3000` in your browser.
 - TypeScript
 - D3.js (graph visualization)
 - Vite
-- Tailwind CSS
+- Tailwind CSS (build-time, theme tokens in `index.css`)
+- Hosted on Cloudflare Pages; `functions/api/waitlist.js` needs a KV binding named `WAITLIST`
 
 ## Building
 

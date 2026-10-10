@@ -1,11 +1,14 @@
 import React from 'react';
 import { Link, useParams, Navigate } from 'react-router-dom';
+import Logo from './Logo';
+import { useSeo } from '../hooks/useSeo';
 import { getBlogPost } from '../data/blogPosts';
 import { Network, ArrowLeft, Calendar, Clock, Tag, User } from 'lucide-react';
 
 const BlogPostPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const post = slug ? getBlogPost(slug) : undefined;
+  useSeo(post ? `${post.title} | NoteWeb Blog` : 'NoteWeb Blog', post?.excerpt || 'NoteWeb blog', `/blog/${slug || ''}`);
 
   if (!post) {
     return <Navigate to="/blog" replace />;
@@ -126,7 +129,7 @@ const BlogPostPage: React.FC = () => {
       <header className="bg-white border-b border-slate-200">
         <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 text-slate-700 hover:text-brand-600 transition-colors">
-            <Network className="w-5 h-5 text-brand-600" />
+            <Logo className="w-6 h-6" />
             <span className="font-bold">NoteWeb</span>
           </Link>
           <Link
@@ -191,8 +194,8 @@ const BlogPostPage: React.FC = () => {
           <h3 className="text-xl font-semibold text-slate-900 mb-2">Ready to try NoteWeb?</h3>
           <p className="text-slate-600 mb-4">Start building your personal knowledge graph today.</p>
           <Link
-            to="/"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-brand-600 text-white font-medium rounded-lg hover:bg-brand-700 transition-colors"
+            to="/app"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-brand-600 text-on-accent font-medium rounded-lg hover:bg-brand-700 transition-colors"
           >
             <Network className="w-5 h-5" />
             Open NoteWeb

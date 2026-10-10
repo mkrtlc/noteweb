@@ -3,4 +3,4 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://noteweb.co/sitemap.xml
+Sitemap: https://www.noteweb.co/sitemap.xml

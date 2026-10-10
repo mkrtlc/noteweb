@@ -63,7 +63,7 @@ const GraphView: React.FC<GraphViewProps> = React.memo(({ data, onNodeClick, act
 
     // -- Draw Links --
     const link = g.append("g")
-      .attr("stroke", "#cbd5e1")
+      .style("stroke", "rgb(var(--slate-300))")
       .attr("stroke-opacity", 0.6)
       .selectAll("line")
       .data(links)
@@ -84,8 +84,8 @@ const GraphView: React.FC<GraphViewProps> = React.memo(({ data, onNodeClick, act
     // Circles
     nodeGroup.append("circle")
       .attr("r", (d) => d.id === activeNodeId ? 12 : 6)
-      .attr("fill", (d) => d.id === activeNodeId ? "#0ea5e9" : "#64748b")
-      .attr("stroke", "#fff")
+      .style("fill", (d) => d.id === activeNodeId ? "rgb(var(--brand-600))" : "rgb(var(--slate-400))")
+      .style("stroke", "rgb(var(--white))")
       .attr("stroke-width", 2)
       .style("cursor", "pointer")
       .on("click", (event, d) => {
@@ -101,7 +101,7 @@ const GraphView: React.FC<GraphViewProps> = React.memo(({ data, onNodeClick, act
       .style("pointer-events", "none") // Clicks pass through to circle
       .style("font-size", "12px")
       .style("font-weight", (d) => d.id === activeNodeId ? "bold" : "normal")
-      .style("fill", (d) => d.id === activeNodeId ? "#0f172a" : "#64748b")
+      .style("fill", (d) => d.id === activeNodeId ? "rgb(var(--slate-900))" : "rgb(var(--slate-500))")
       .style("text-shadow", "0 1px 3px rgba(255,255,255,0.8)");
 
     // Simulation Tick
@@ -150,13 +150,13 @@ const GraphView: React.FC<GraphViewProps> = React.memo(({ data, onNodeClick, act
     g.selectAll("circle")
       .transition().duration(200)
       .attr("r", (d: any) => d.id === activeNodeId ? 12 : 6)
-      .attr("fill", (d: any) => d.id === activeNodeId ? "#0ea5e9" : "#64748b");
+      .style("fill", (d: any) => d.id === activeNodeId ? "rgb(var(--brand-600))" : "rgb(var(--slate-400))");
       
     // Update text
     g.selectAll("text")
       .transition().duration(200)
       .style("font-weight", (d: any) => d.id === activeNodeId ? "bold" : "normal")
-      .style("fill", (d: any) => d.id === activeNodeId ? "#0f172a" : "#64748b");
+      .style("fill", (d: any) => d.id === activeNodeId ? "rgb(var(--slate-900))" : "rgb(var(--slate-500))");
       
   }, [activeNodeId]);
 

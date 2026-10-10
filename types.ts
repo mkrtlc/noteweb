@@ -7,7 +7,23 @@ export interface Note {
   order: number; // For manual ordering within folders/root
   updatedAt: number;
   createdAt: number;
+  pinned?: boolean; // Shown in the Favorites section
 }
+
+export interface TrashedNote {
+  note: Note;
+  deletedAt: number;
+}
+
+export interface NoteSnapshot {
+  title: string;
+  content: string;
+  at: number;
+}
+
+export type SortMode = 'manual' | 'updated' | 'created' | 'title';
+
+export type ThemeMode = 'light' | 'dark' | 'system';
 
 export interface Folder {
   id: string;

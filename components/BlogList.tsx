@@ -1,10 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import Logo from './Logo';
+import { useSeo } from '../hooks/useSeo';
 import { getAllBlogPosts } from '../data/blogPosts';
-import { Network, ArrowLeft, Calendar, Clock, Tag } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, Tag } from 'lucide-react';
 
 const BlogList: React.FC = () => {
   const posts = getAllBlogPosts();
+  useSeo(
+    'NoteWeb Blog: note-taking, Zettelkasten and personal knowledge management',
+    'Guides on linked note-taking, Zettelkasten, second brains and getting more out of NoteWeb.',
+    '/blog'
+  );
 
   return (
     <div className="fixed inset-0 bg-slate-50 flex flex-col overflow-y-auto">
@@ -12,11 +19,11 @@ const BlogList: React.FC = () => {
       <header className="bg-white border-b border-slate-200">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 text-slate-700 hover:text-brand-600 transition-colors">
-            <Network className="w-5 h-5 text-brand-600" />
+            <Logo className="w-6 h-6" />
             <span className="font-bold">NoteWeb</span>
           </Link>
           <Link
-            to="/"
+            to="/app"
             className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />

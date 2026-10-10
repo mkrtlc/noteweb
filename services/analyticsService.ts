@@ -189,3 +189,31 @@ export const trackDataMigrated = (noteCount: number, folderCount: number) => {
     folder_count: folderCount
   });
 };
+
+// ============ V2 FEATURE EVENTS ============
+
+/** Generic tracker for v2 features (event names documented in NoteWeb-Marketing-Analytics.md). */
+export const trackFeature = (
+  eventName:
+    | 'command_palette_opened'
+    | 'search_performed'
+    | 'template_used'
+    | 'daily_note_opened'
+    | 'note_pinned'
+    | 'note_restored'
+    | 'trash_emptied'
+    | 'version_restored'
+    | 'export_completed'
+    | 'import_completed'
+    | 'theme_changed'
+    | 'focus_mode_toggled'
+    | 'tag_added'
+    | 'mention_linked'
+    | 'landing_cta_clicked'
+    | 'pricing_viewed'
+    | 'pro_waitlist_joined'
+    | 'app_installed',
+  params?: Record<string, string | number | boolean>
+) => {
+  pushEvent(eventName, params);
+};

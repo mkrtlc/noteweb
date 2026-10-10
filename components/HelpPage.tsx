@@ -1,5 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import Logo from './Logo';
+import { useSeo } from '../hooks/useSeo';
 import {
   Network,
   ArrowLeft,
@@ -71,17 +73,18 @@ const Kbd: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 );
 
 const HelpPage: React.FC = () => {
+  useSeo('NoteWeb Help: shortcuts, linking, graph and backups', 'How to use NoteWeb: slash commands, wiki links, backlinks, the knowledge graph, shortcuts, backups and more.', '/help');
   return (
     <div className="fixed inset-0 bg-slate-50 flex flex-col overflow-y-auto">
       {/* Header */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 text-slate-700 hover:text-brand-600 transition-colors">
-            <Network className="w-5 h-5 text-brand-600" />
+            <Logo className="w-6 h-6" />
             <span className="font-bold">NoteWeb</span>
           </Link>
           <Link
-            to="/"
+            to="/app"
             className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -453,8 +456,8 @@ const HelpPage: React.FC = () => {
           <h3 className="text-xl font-semibold text-slate-900 mb-2">Ready to start?</h3>
           <p className="text-slate-600 mb-4">Jump back into NoteWeb and start building your knowledge graph.</p>
           <Link
-            to="/"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-brand-600 text-white font-medium rounded-lg hover:bg-brand-700 transition-colors"
+            to="/app"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-brand-600 text-on-accent font-medium rounded-lg hover:bg-brand-700 transition-colors"
           >
             <Network className="w-5 h-5" />
             Open NoteWeb

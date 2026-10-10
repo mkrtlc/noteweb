@@ -3,7 +3,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig({
-  base: './', // Use relative paths for standalone deployment
+  base: '/',
   server: {
     port: 3000,
     host: '0.0.0.0',
@@ -11,18 +11,19 @@ export default defineConfig({
   plugins: [react()],
   build: {
     outDir: 'dist',
-    assetsInlineLimit: 100000000, // Inline all assets
-    cssCodeSplit: false,
+    chunkSizeWarningLimit: 1400,
     rollupOptions: {
       output: {
-        inlineDynamicImports: true,
-        manualChunks: undefined,
+        manualChunks: {
+          react: ['react', 'react-dom', 'react-router-dom'],
+          d3: ['d3'],
+        },
       },
     },
   },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, '.'),
-    }
-  }
+    },
+  },
 });

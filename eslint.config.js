@@ -26,5 +26,17 @@ export default tseslint.config(
     },
     settings: { react: { version: 'detect' } },
   },
+  {
+    files: ['public/sw.js'],
+    languageOptions: { globals: globals.serviceworker },
+  },
+  {
+    files: ['functions/**/*.js'],
+    languageOptions: { globals: globals.worker },
+  },
+  {
+    files: ['scripts/**/*.js', '*.config.js'],
+    languageOptions: { globals: globals.node },
+  },
   prettier,
 );

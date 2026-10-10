@@ -1,6 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import './index.css';
+import { trackFeature } from './services/analyticsService';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -13,3 +15,11 @@ root.render(
     <App />
   </React.StrictMode>
 );
+
+// Offline support (production only, so dev reloads stay predictable).
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(err => console.warn('Service worker registration failed', err));
+  });
+}
+window.addEventListener('appinstalled', () => trackFeature('app_installed'));
