@@ -64,7 +64,7 @@ import TasksModal from '../components/TasksModal';
 import StatsModal from '../components/StatsModal';
 import ShareModal from '../components/ShareModal';
 import ProModal from '../components/ProModal';
-import { usePro } from '../hooks/usePro';
+import { usePro, ACCENTS, applyAccent } from '../hooks/usePro';
 import Modal, { Button, Kbd, modKey } from '../components/ui/Modal';
 import Logo from '../components/Logo';
 import {
@@ -815,6 +815,13 @@ const NotesApp: React.FC = () => {
     { id: 'font-mono', label: 'Editor font: Mono', icon: <Type className="w-4 h-4" />, keywords: 'typography appearance code', run: () => updateSettings({ editorFont: 'mono' }) },
     { id: 'wide', label: settings.wideEditor ? 'Readable width editor' : 'Full width editor', icon: <Maximize2 className="w-4 h-4" />, keywords: 'layout', run: () => updateSettings({ wideEditor: !settings.wideEditor }) },
     { id: 'local-graph', label: settings.localGraph ? 'Show full graph' : 'Show local graph (nearby notes)', icon: <Crosshair className="w-4 h-4" />, run: () => updateSettings({ localGraph: !settings.localGraph, showGraph: true, rightTab: 'graph' }) },
+    ...ACCENTS.map(a => ({
+      id: `accent-${a.id}`,
+      label: `Accent color: ${a.label}${pro ? '' : ' (Pro)'}`,
+      icon: <span className="block w-4 h-4 rounded-full" style={{ background: a.swatch }} />,
+      keywords: 'theme color appearance pro',
+      run: () => (pro ? applyAccent(a.id) : setProOpen(true)),
+    })),
     { id: 'shortcuts', label: 'Keyboard shortcuts', icon: <Keyboard className="w-4 h-4" />, shortcut: `${modKey} /`, run: () => setShortcutsOpen(true) },
     { id: 'pro', label: pro ? 'NoteWeb Pro: accent colors & subscription' : 'Upgrade to NoteWeb Pro / activate license', icon: <Sparkles className="w-4 h-4" />, keywords: 'pricing upgrade license key accent color theme', run: () => setProOpen(true) },
   ];
@@ -1676,7 +1683,7 @@ const NotesApp: React.FC = () => {
         onDeleteForever={deleteForever}
         onEmpty={emptyTrash}
       />
-      <HistoryModal open={historyOpen} onClose={() => setHistoryOpen(false)} note={activeNote} onRestore={restoreSnapshot} />
+      <HistoryModal open={historyOpen} onClose={() => setHistoryOpen(false)} note={activeNote} onRestore={restoreSnapshot} onUpgrade={() => setProOpen(true)} />
       <ShortcutsModal open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
       <TemplatePicker open={templatesOpen} onClose={() => setTemplatesOpen(false)} onPick={createFromTemplate} />
       <TasksModal open={tasksOpen} onClose={() => setTasksOpen(false)} notes={notes} onToggle={toggleTask} onOpenNote={openNote} />

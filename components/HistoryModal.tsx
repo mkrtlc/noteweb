@@ -4,15 +4,17 @@ import Modal, { Button } from './ui/Modal';
 import { Note, NoteSnapshot } from '../types';
 import { loadHistory } from '../services/storageService';
 import { relativeTime, wordCount } from '../utils/noteUtils';
+import { isPro, FREE_HISTORY_LIMIT } from '../services/proService';
 
 interface Props {
   open: boolean;
   onClose: () => void;
   note: Note | null;
   onRestore: (snapshot: NoteSnapshot) => void;
+  onUpgrade?: () => void;
 }
 
-const HistoryModal: React.FC<Props> = ({ open, onClose, note, onRestore }) => {
+const HistoryModal: React.FC<Props> = ({ open, onClose, note, onRestore, onUpgrade }) => {
   const [snapshots, setSnapshots] = useState<NoteSnapshot[]>([]);
   const [selected, setSelected] = useState(0);
 
@@ -32,6 +34,18 @@ const HistoryModal: React.FC<Props> = ({ open, onClose, note, onRestore }) => {
           No earlier versions yet. NoteWeb saves a version every few minutes while you write (20 per note, 200 with Pro).
         </p>
       ) : (
+        <>
+        {snapshots.length >= FREE_HISTORY_LIMIT && !isPro() && onUpgrade && (
+          <button
+            onClick={() => {
+              onClose();
+              onUpgrade();
+            }}
+            className="w-full text-left px-5 py-2.5 text-sm bg-brand-50 text-brand-700 hover:bg-brand-100 border-b border-brand-100"
+          >
+            Free keeps the latest {FREE_HISTORY_LIMIT} versions of each note. <span className="font-semibold underline">Pro keeps 200.</span>
+          </button>
+        )}
         <div className="flex flex-col sm:flex-row min-h-[50vh]">
           <ul className="sm:w-56 shrink-0 border-b sm:border-b-0 sm:border-r border-slate-100 max-h-48 sm:max-h-none overflow-y-auto">
             {snapshots.map((s, i) => (
@@ -66,6 +80,7 @@ const HistoryModal: React.FC<Props> = ({ open, onClose, note, onRestore }) => {
             </div>
           </div>
         </div>
+        </>
       )}
     </Modal>
   );
