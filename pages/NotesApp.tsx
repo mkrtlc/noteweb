@@ -102,7 +102,7 @@ import {
   ArrowUpDown,
   ListTree,
   Link2,
-  Sparkles,
+  Gem,
   Check,
   ShieldCheck,
   Download,
@@ -823,7 +823,7 @@ const NotesApp: React.FC = () => {
       run: () => (pro ? applyAccent(a.id) : setProOpen(true)),
     })),
     { id: 'shortcuts', label: 'Keyboard shortcuts', icon: <Keyboard className="w-4 h-4" />, shortcut: `${modKey} /`, run: () => setShortcutsOpen(true) },
-    { id: 'pro', label: pro ? 'NoteWeb Pro: accent colors & subscription' : 'Upgrade to NoteWeb Pro / activate license', icon: <Sparkles className="w-4 h-4" />, keywords: 'pricing upgrade license key accent color theme', run: () => setProOpen(true) },
+    { id: 'pro', label: pro ? 'NoteWeb Pro: accent colors & subscription' : 'Upgrade to NoteWeb Pro / activate license', icon: <Gem className="w-4 h-4" />, keywords: 'pricing upgrade license key accent color theme', run: () => setProOpen(true) },
   ];
 
   const commandsRef = useRef(commands);
@@ -1161,7 +1161,7 @@ const NotesApp: React.FC = () => {
             onClick={() => setProOpen(true)}
             className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm font-medium text-brand-700 bg-brand-50 hover:bg-brand-100"
           >
-            <Sparkles className="w-4 h-4" />
+            <Gem className="w-4 h-4" />
             <span className="flex-1 text-left">NoteWeb Pro</span>
             <span className={`text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded ${pro ? 'bg-brand-600 text-on-accent' : 'bg-white/70'}`}>
               {pro ? 'Active' : 'Upgrade'}

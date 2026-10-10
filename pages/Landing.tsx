@@ -15,7 +15,7 @@ import {
   Brain,
   ListChecks,
   Quote,
-  Sparkles,
+  Plus,
 } from 'lucide-react';
 import { MarketingPage, Atmosphere } from '../components/SiteChrome';
 import { useSeo } from '../hooks/useSeo';
@@ -523,7 +523,7 @@ const Landing: React.FC = () => {
               </span>
             ))}
             <span className="mk-pill mk-reveal">
-              <Sparkles className="w-3.5 h-3.5" />& much more
+              <Plus className="w-3.5 h-3.5" />& much more
             </span>
           </div>
         </div>

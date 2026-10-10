@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, Check, KeyRound, ExternalLink, Lock, Loader2 } from 'lucide-react';
+import { Gem, Check, KeyRound, ExternalLink, Lock, Loader2 } from 'lucide-react';
 import Modal, { Button } from './ui/Modal';
 import { activateLicense, deactivateLicense, CUSTOMER_PORTAL, CHECKOUT_YEARLY, CHECKOUT_MONTHLY, CHECKOUT_LIVE } from '../services/proService';
 import { ACCENTS, applyAccent, readAccent, usePro, AccentId } from '../hooks/usePro';
@@ -28,7 +28,7 @@ const ProModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onCl
   };
 
   return (
-    <Modal open={open} onClose={onClose} title={<span className="flex items-center gap-2"><Sparkles className="w-4 h-4 text-brand-600" /> NoteWeb Pro</span>}>
+    <Modal open={open} onClose={onClose} title={<span className="flex items-center gap-2"><Gem className="w-4 h-4 text-brand-600" /> NoteWeb Pro</span>}>
       <div className="p-5 space-y-5">
         {pro ? (
           <>

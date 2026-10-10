@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Sparkles, KeyRound, Mail, ExternalLink, Loader2, Check, ArrowRight } from 'lucide-react';
-import { MarketingPage } from '../components/SiteChrome';
+import { KeyRound, Mail, ExternalLink, Loader2, Check, ArrowRight } from 'lucide-react';
+import { MarketingPage, MarkWhite } from '../components/SiteChrome';
 import { useSeo } from '../hooks/useSeo';
 import { activateLicense, CUSTOMER_PORTAL } from '../services/proService';
 import { usePro } from '../hooks/usePro';
@@ -37,7 +37,7 @@ const ProWelcome: React.FC = () => {
       <main className="max-w-2xl mx-auto px-4 sm:px-6 pt-32 pb-24">
         <div className="text-center">
           <div className="mx-auto w-14 h-14 rounded-2xl bg-brand-600 text-on-accent flex items-center justify-center shadow-lg shadow-brand-600/25">
-            <Sparkles className="w-7 h-7" />
+            <MarkWhite className="w-7 h-7" />
           </div>
           <h1 className="mt-6 text-3xl sm:text-4xl font-extrabold tracking-tight">
             {pro ? 'NoteWeb Pro is active' : fromCheckout ? 'Thank you for supporting NoteWeb!' : 'Activate NoteWeb Pro'}
