@@ -63,6 +63,8 @@ import TemplatePicker from '../components/TemplatePicker';
 import TasksModal from '../components/TasksModal';
 import StatsModal from '../components/StatsModal';
 import ShareModal from '../components/ShareModal';
+import ProModal from '../components/ProModal';
+import { usePro } from '../hooks/usePro';
 import Modal, { Button, Kbd, modKey } from '../components/ui/Modal';
 import Logo from '../components/Logo';
 import {
@@ -170,6 +172,8 @@ const NotesApp: React.FC = () => {
   const [tasksOpen, setTasksOpen] = useState(false);
   const [statsOpen, setStatsOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [proOpen, setProOpen] = useState(false);
+  const { pro } = usePro();
   const [noteMenuOpen, setNoteMenuOpen] = useState(false);
   const [sortMenuOpen, setSortMenuOpen] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -812,7 +816,7 @@ const NotesApp: React.FC = () => {
     { id: 'wide', label: settings.wideEditor ? 'Readable width editor' : 'Full width editor', icon: <Maximize2 className="w-4 h-4" />, keywords: 'layout', run: () => updateSettings({ wideEditor: !settings.wideEditor }) },
     { id: 'local-graph', label: settings.localGraph ? 'Show full graph' : 'Show local graph (nearby notes)', icon: <Crosshair className="w-4 h-4" />, run: () => updateSettings({ localGraph: !settings.localGraph, showGraph: true, rightTab: 'graph' }) },
     { id: 'shortcuts', label: 'Keyboard shortcuts', icon: <Keyboard className="w-4 h-4" />, shortcut: `${modKey} /`, run: () => setShortcutsOpen(true) },
-    { id: 'pro', label: 'NoteWeb Pro: sync, publish & more', icon: <Sparkles className="w-4 h-4" />, keywords: 'pricing upgrade', run: () => window.location.assign('/pricing') },
+    { id: 'pro', label: pro ? 'NoteWeb Pro: accent colors & subscription' : 'Upgrade to NoteWeb Pro / activate license', icon: <Sparkles className="w-4 h-4" />, keywords: 'pricing upgrade license key accent color theme', run: () => setProOpen(true) },
   ];
 
   const commandsRef = useRef(commands);
@@ -1146,14 +1150,16 @@ const NotesApp: React.FC = () => {
 
         {/* Sidebar footer */}
         <div className="border-t border-slate-200 p-2 space-y-0.5 shrink-0">
-          <Link
-            to="/pricing"
-            className="flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm font-medium text-brand-700 bg-brand-50 hover:bg-brand-100"
+          <button
+            onClick={() => setProOpen(true)}
+            className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm font-medium text-brand-700 bg-brand-50 hover:bg-brand-100"
           >
             <Sparkles className="w-4 h-4" />
-            <span className="flex-1">NoteWeb Pro</span>
-            <span className="text-[10px] uppercase tracking-wide bg-white/70 px-1.5 py-0.5 rounded">Soon</span>
-          </Link>
+            <span className="flex-1 text-left">NoteWeb Pro</span>
+            <span className={`text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded ${pro ? 'bg-brand-600 text-on-accent' : 'bg-white/70'}`}>
+              {pro ? 'Active' : 'Upgrade'}
+            </span>
+          </button>
           <div className="flex items-center justify-between px-1 pt-1">
             <div className="flex items-center">
               <button onClick={() => setBackupOpen(true)} className="p-2 rounded-lg text-slate-500 hover:bg-slate-200/70" title="Backup & export">
@@ -1676,6 +1682,7 @@ const NotesApp: React.FC = () => {
       <TasksModal open={tasksOpen} onClose={() => setTasksOpen(false)} notes={notes} onToggle={toggleTask} onOpenNote={openNote} />
       <StatsModal open={statsOpen} onClose={() => setStatsOpen(false)} notes={notes} />
       <ShareModal open={shareOpen} onClose={() => setShareOpen(false)} note={activeNote} />
+      <ProModal open={proOpen} onClose={() => setProOpen(false)} />
 
       <Modal
         open={showFolderModal}

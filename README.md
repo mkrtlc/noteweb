@@ -19,7 +19,8 @@ A note-taking app with graph visualization and Notion-style markdown editing. Al
 - **Safety nudges**: backup reminder after two weeks, persistent-storage request so the browser doesn't evict notes
 - **Local graph** (notes within two hops), **link hover previews**, editor **font** (sans/serif/mono) and **full-width** options
 - **Installable PWA** with offline support
-- Landing page, pricing page and Pro waitlist (Cloudflare Pages Function + KV)
+- Landing page, pricing page and **NoteWeb Pro** via Polar: checkout links, license-key activation (`services/proService.ts`, validated against Polar's public endpoint), `/pro/welcome` success page, Pro accent themes and 200-version history
+- Sync waitlist (Cloudflare Pages Function + KV)
 
 ### Rich Markdown Editor
 - **Slash Commands** - Type `/` to access formatting options

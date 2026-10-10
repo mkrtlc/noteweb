@@ -34,6 +34,8 @@
           var t = localStorage.getItem('noteweb_theme') || 'system';
           var dark = t === 'dark' || (t === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
           if (dark) document.documentElement.classList.add('dark');
+          var accent = localStorage.getItem('noteweb_accent');
+          if (accent && localStorage.getItem('noteweb_pro')) document.documentElement.setAttribute('data-accent', accent);
         } catch (e) {}
       })();
     </script>

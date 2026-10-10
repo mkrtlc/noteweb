@@ -73,7 +73,7 @@ const FAQ = [
   },
   {
     q: 'Is NoteWeb free?',
-    a: 'Everything you see today is free. NoteWeb Pro will add sync across devices, publishing and more for people who want them.',
+    a: 'Yes. Unlimited notes and every core feature are free. NoteWeb Pro ($7/month or $60/year) adds accent themes and longer version history now, and encrypted sync and publishing as they ship.',
   },
 ];
 
@@ -316,16 +316,16 @@ const Landing: React.FC = () => {
           <div className="rounded-3xl bg-[#12141c] text-[#f8fafc] p-8 sm:p-12 grid md:grid-cols-5 gap-8 items-center ring-1 ring-[#262a36]">
             <div className="md:col-span-3">
               <p className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#a5a5f5]">
-                <Sparkles className="w-3.5 h-3.5" /> Coming soon
+                <Sparkles className="w-3.5 h-3.5" /> Now available
               </p>
               <h2 className="mt-3 text-3xl font-bold tracking-tight">NoteWeb Pro</h2>
               <p className="mt-3 text-[#cbd5e1]">
-                End-to-end encrypted sync across all your devices, publishing notes as web pages, unlimited history and more. Free stays free.
+                Accent color themes and 10× version history today, with end-to-end encrypted sync and publishing on the way. From $5/month. Free stays free.
               </p>
             </div>
             <div className="md:col-span-2 flex md:justify-end">
               <Link to="/pricing" className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-[#fff] text-[#0f172a] font-semibold hover:bg-[#e2e8f0] transition">
-                Join the waitlist <ArrowRight className="w-4 h-4" />
+                See Pro <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
           </div>

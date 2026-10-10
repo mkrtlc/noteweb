@@ -29,7 +29,7 @@ const HistoryModal: React.FC<Props> = ({ open, onClose, note, onRestore }) => {
     <Modal open={open} onClose={onClose} title={<span className="flex items-center gap-2"><History className="w-4 h-4" /> Version history</span>} width="max-w-3xl">
       {snapshots.length === 0 ? (
         <p className="p-10 text-center text-sm text-slate-400">
-          No earlier versions yet. NoteWeb saves a version every few minutes while you write.
+          No earlier versions yet. NoteWeb saves a version every few minutes while you write (20 per note, 200 with Pro).
         </p>
       ) : (
         <div className="flex flex-col sm:flex-row min-h-[50vh]">

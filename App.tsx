@@ -9,6 +9,7 @@ const BlogList = lazy(() => import('./components/BlogList'));
 const BlogPostPage = lazy(() => import('./components/BlogPost'));
 const HelpPage = lazy(() => import('./components/HelpPage'));
 const SharedNote = lazy(() => import('./pages/SharedNote'));
+const ProWelcome = lazy(() => import('./pages/ProWelcome'));
 
 const Loading: React.FC = () => (
   <div className="h-full w-full flex items-center justify-center bg-white">
@@ -39,6 +40,7 @@ const App: React.FC = () => (
         <Route path="/blog/:slug" element={<BlogPostPage />} />
         <Route path="/help" element={<HelpPage />} />
         <Route path="/share" element={<SharedNote />} />
+        <Route path="/pro/welcome" element={<ProWelcome />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>

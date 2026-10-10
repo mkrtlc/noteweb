@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Check, Sparkles, ArrowRight, Loader2, ShieldCheck } from 'lucide-react';
+import { Check, Sparkles, ArrowRight, Loader2, ShieldCheck, Clock } from 'lucide-react';
+import { CHECKOUT_MONTHLY, CHECKOUT_YEARLY } from '../services/proService';
 import SiteHeader, { SiteFooter } from '../components/SiteChrome';
 import { useSeo } from '../hooks/useSeo';
 import { trackFeature, getAnonId } from '../services/analyticsService';
@@ -16,15 +17,9 @@ const FREE = [
   'Dark mode, focus mode, offline app',
 ];
 
-const PRO = [
-  'Everything in Free',
-  'End-to-end encrypted sync across devices',
-  'Publish notes as public web pages',
-  'Unlimited version history',
-  'Images and file attachments',
-  'Extra themes and custom fonts',
-  'Priority support',
-];
+const PRO_NOW = ['Everything in Free', '6 accent color themes', '200 saved versions per note (Free: 20)', 'Supporter badge, and you fund development'];
+
+const PRO_SOON = ['End-to-end encrypted sync across devices', 'Publish notes as public web pages', 'Images and file attachments'];
 
 type Status = 'idle' | 'sending' | 'done' | 'error';
 
@@ -35,7 +30,7 @@ const Pricing: React.FC = () => {
   const [message, setMessage] = useState('');
   const [hp, setHp] = useState(''); // honeypot
 
-  useSeo('NoteWeb pricing: free forever, Pro coming soon', 'NoteWeb is free for unlimited local notes. NoteWeb Pro adds encrypted sync, publishing and more. Join the waitlist.', '/pricing');
+  useSeo('NoteWeb pricing: free forever, Pro from $5/month', 'NoteWeb is free for unlimited local notes. NoteWeb Pro adds accent themes, longer version history and upcoming encrypted sync and publishing.', '/pricing');
 
   useEffect(() => {
     trackFeature('pricing_viewed');
@@ -58,7 +53,7 @@ const Pricing: React.FC = () => {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Something went wrong. Please try again.');
       setStatus('done');
-      setMessage(data.already ? "You're already on the list. We'll be in touch." : "You're on the list! We'll email you when Pro opens.");
+      setMessage(data.already ? "You're already on the list. We'll be in touch." : "You're on the list! We'll email you when sync launches.");
       trackFeature('pro_waitlist_joined', { plan });
     } catch (err) {
       setStatus('error');
@@ -112,68 +107,84 @@ const Pricing: React.FC = () => {
 
           <div className="relative rounded-3xl p-8 flex flex-col bg-gradient-to-b from-brand-50 to-white ring-2 ring-brand-500 shadow-xl shadow-brand-600/10">
             <span className="absolute -top-3 left-8 inline-flex items-center gap-1 px-3 py-1 rounded-full bg-brand-600 text-on-accent text-xs font-semibold">
-              <Sparkles className="w-3.5 h-3.5" /> Coming soon
+              <Sparkles className="w-3.5 h-3.5" /> Supporter
             </span>
             <h2 className="text-lg font-semibold">Pro</h2>
-            <p className="mt-1 text-sm text-slate-500">Your notes on every device</p>
+            <p className="mt-1 text-sm text-slate-500">More room, more polish, and the future of NoteWeb</p>
             <p className="mt-6">
               <span className="text-5xl font-extrabold tracking-tight">{price.amount}</span>
               <span className="ml-2 text-sm text-slate-500">{price.note}</span>
             </p>
-            <p className="text-xs text-slate-400 mt-1">Planned price. Waitlist members get first access.</p>
-            <ul className="mt-6 space-y-3 text-sm flex-1">
-              {PRO.map(f => (
+            <p className="text-xs text-slate-400 mt-1">Cancel anytime. Taxes handled by Polar, our merchant of record.</p>
+            <ul className="mt-6 space-y-3 text-sm">
+              {PRO_NOW.map(f => (
                 <li key={f} className="flex gap-3">
                   <Check className="w-5 h-5 text-brand-600 shrink-0" />
                   <span className="text-slate-700">{f}</span>
                 </li>
               ))}
             </ul>
-            {status === 'done' ? (
-              <p className="mt-8 p-4 rounded-xl bg-emerald-50 text-emerald-700 text-sm font-medium" role="status">
-                {message}
-              </p>
-            ) : (
-              <form onSubmit={submit} className="mt-8 space-y-2">
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <label htmlFor="waitlist-email" className="sr-only">
-                    Email
-                  </label>
-                  <input
-                    id="waitlist-email"
-                    type="email"
-                    required
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    autoComplete="email"
-                    className="flex-1 min-w-0 px-4 py-3 rounded-xl bg-white ring-1 ring-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500"
-                  />
-                  <input type="text" tabIndex={-1} autoComplete="off" value={hp} onChange={e => setHp(e.target.value)} className="hidden" aria-hidden="true" />
-                  <button
-                    type="submit"
-                    disabled={status === 'sending'}
-                    className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-on-accent font-semibold disabled:opacity-60"
-                  >
-                    {status === 'sending' ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                    Join waitlist
-                  </button>
-                </div>
-                {status === 'error' && (
-                  <p className="text-sm text-red-600" role="alert">
-                    {message}
-                  </p>
-                )}
-                <p className="text-xs text-slate-400">One email when Pro launches. No spam, unsubscribe anytime.</p>
-              </form>
-            )}
+            <p className="mt-5 text-xs font-semibold uppercase tracking-wider text-slate-400">Coming to Pro</p>
+            <ul className="mt-2 space-y-2 text-sm flex-1">
+              {PRO_SOON.map(f => (
+                <li key={f} className="flex gap-3">
+                  <Clock className="w-5 h-5 text-slate-400 shrink-0" />
+                  <span className="text-slate-500">{f}</span>
+                </li>
+              ))}
+            </ul>
+            <a
+              href={plan === 'yearly' ? CHECKOUT_YEARLY : CHECKOUT_MONTHLY}
+              onClick={() => trackFeature('checkout_started', { plan, where: 'pricing' })}
+              className="mt-8 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-on-accent font-semibold"
+            >
+              Get Pro {plan === 'yearly' ? 'yearly' : 'monthly'} <ArrowRight className="w-4 h-4" />
+            </a>
+            <Link to="/pro/welcome" className="mt-3 text-center text-xs text-slate-500 hover:text-slate-700 underline">
+              Already bought? Activate your license
+            </Link>
           </div>
+        </div>
+
+        <div className="mt-12 max-w-xl mx-auto text-center">
+          <p className="text-sm font-medium text-slate-700">Not ready yet? Get one email when encrypted sync launches.</p>
+          {status === 'done' ? (
+            <p className="mt-3 p-3 rounded-xl bg-emerald-50 text-emerald-700 text-sm font-medium" role="status">
+              {message}
+            </p>
+          ) : (
+            <form onSubmit={submit} className="mt-3 flex flex-col sm:flex-row gap-2">
+              <label htmlFor="waitlist-email" className="sr-only">
+                Email
+              </label>
+              <input
+                id="waitlist-email"
+                type="email"
+                required
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                autoComplete="email"
+                className="flex-1 min-w-0 px-4 py-2.5 rounded-xl bg-white ring-1 ring-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500"
+              />
+              <input type="text" tabIndex={-1} autoComplete="off" value={hp} onChange={e => setHp(e.target.value)} className="hidden" aria-hidden="true" />
+              <button type="submit" disabled={status === 'sending'} className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl ring-1 ring-slate-300 font-semibold hover:bg-slate-50 disabled:opacity-60">
+                {status === 'sending' ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                Notify me
+              </button>
+            </form>
+          )}
+          {status === 'error' && (
+            <p className="mt-2 text-sm text-red-600" role="alert">
+              {message}
+            </p>
+          )}
         </div>
 
         <div className="mt-16 max-w-3xl mx-auto grid sm:grid-cols-3 gap-4 text-sm">
           {[
             ['Is Free really free?', 'Yes. Unlimited notes, no ads, no trial that runs out.'],
-            ['Will Pro read my notes?', 'No. Sync will be end-to-end encrypted: only your devices hold the key.'],
+            ['Will Pro read my notes?', 'No. Pro is a license check only, and sync will be end-to-end encrypted: only your devices hold the key.'],
             ['Can I leave anytime?', 'Always. Export everything to Markdown with one click, Free or Pro.'],
           ].map(([q, a]) => (
             <div key={q} className="p-5 rounded-2xl bg-slate-50">

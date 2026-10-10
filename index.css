@@ -370,3 +370,125 @@ mark.nw-hit {
   font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
   font-size: 0.95rem;
 }
+
+/* Pro accent themes (data-accent on <html>) */
+:root[data-accent="emerald"] {
+  --brand-50: 236 253 245;
+  --brand-100: 209 250 229;
+  --brand-200: 167 243 208;
+  --brand-300: 110 231 183;
+  --brand-400: 52 211 153;
+  --brand-500: 16 185 129;
+  --brand-600: 5 150 105;
+  --brand-700: 4 120 87;
+  --brand-800: 6 95 70;
+  --brand-900: 6 78 59;
+}
+:root.dark[data-accent="emerald"] {
+  --brand-50: 13 41 38;
+  --brand-100: 12 52 44;
+  --brand-200: 15 77 61;
+  --brand-300: 16 109 81;
+  --brand-400: 16 185 129;
+  --brand-500: 52 211 153;
+  --brand-600: 52 211 153;
+  --brand-700: 110 231 183;
+  --brand-800: 167 243 208;
+  --brand-900: 209 250 229;
+}
+:root[data-accent="rose"] {
+  --brand-50: 255 241 242;
+  --brand-100: 255 228 230;
+  --brand-200: 254 205 211;
+  --brand-300: 253 164 175;
+  --brand-400: 251 113 133;
+  --brand-500: 244 63 94;
+  --brand-600: 225 29 72;
+  --brand-700: 190 18 60;
+  --brand-800: 159 18 57;
+  --brand-900: 136 19 55;
+}
+:root.dark[data-accent="rose"] {
+  --brand-50: 53 19 32;
+  --brand-100: 70 20 36;
+  --brand-200: 97 34 49;
+  --brand-300: 141 42 62;
+  --brand-400: 244 63 94;
+  --brand-500: 251 113 133;
+  --brand-600: 251 113 133;
+  --brand-700: 253 164 175;
+  --brand-800: 254 205 211;
+  --brand-900: 255 228 230;
+}
+:root[data-accent="amber"] {
+  --brand-50: 255 251 235;
+  --brand-100: 254 243 199;
+  --brand-200: 253 230 138;
+  --brand-300: 252 211 77;
+  --brand-400: 251 191 36;
+  --brand-500: 245 158 11;
+  --brand-600: 217 119 6;
+  --brand-700: 180 83 9;
+  --brand-800: 146 64 14;
+  --brand-900: 120 53 15;
+}
+:root.dark[data-accent="amber"] {
+  --brand-50: 51 35 20;
+  --brand-100: 68 44 19;
+  --brand-200: 98 68 19;
+  --brand-300: 142 95 16;
+  --brand-400: 245 158 11;
+  --brand-500: 251 191 36;
+  --brand-600: 251 191 36;
+  --brand-700: 252 211 77;
+  --brand-800: 253 230 138;
+  --brand-900: 254 243 199;
+}
+:root[data-accent="ocean"] {
+  --brand-50: 240 249 255;
+  --brand-100: 224 242 254;
+  --brand-200: 186 230 253;
+  --brand-300: 125 211 252;
+  --brand-400: 56 189 248;
+  --brand-500: 14 165 233;
+  --brand-600: 2 132 199;
+  --brand-700: 3 105 161;
+  --brand-800: 7 89 133;
+  --brand-900: 12 74 110;
+}
+:root.dark[data-accent="ocean"] {
+  --brand-50: 13 38 55;
+  --brand-100: 12 47 69;
+  --brand-200: 15 70 99;
+  --brand-300: 14 98 138;
+  --brand-400: 14 165 233;
+  --brand-500: 56 189 248;
+  --brand-600: 56 189 248;
+  --brand-700: 125 211 252;
+  --brand-800: 186 230 253;
+  --brand-900: 224 242 254;
+}
+:root[data-accent="graphite"] {
+  --brand-50: 248 250 252;
+  --brand-100: 241 245 249;
+  --brand-200: 226 232 240;
+  --brand-300: 203 213 225;
+  --brand-400: 148 163 184;
+  --brand-500: 100 116 139;
+  --brand-600: 51 65 85;
+  --brand-700: 30 41 59;
+  --brand-800: 15 23 42;
+  --brand-900: 2 6 23;
+}
+:root.dark[data-accent="graphite"] {
+  --brand-50: 35 39 47;
+  --brand-100: 44 49 58;
+  --brand-200: 58 64 75;
+  --brand-300: 82 90 104;
+  --brand-400: 148 163 184;
+  --brand-500: 203 213 225;
+  --brand-600: 203 213 225;
+  --brand-700: 226 232 240;
+  --brand-800: 241 245 249;
+  --brand-900: 248 250 252;
+}

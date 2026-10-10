@@ -218,7 +218,10 @@ export const trackFeature = (
     | 'tasks_opened'
     | 'task_toggled'
     | 'note_printed'
-    | 'stats_opened',
+    | 'stats_opened'
+    | 'checkout_started'
+    | 'pro_activated'
+    | 'checkout_completed',
   params?: Record<string, string | number | boolean>
 ) => {
   pushEvent(eventName, params);

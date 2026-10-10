@@ -1,4 +1,5 @@
 import { Note, Folder, TrashedNote, NoteSnapshot } from "../types";
+import { isPro, PRO_HISTORY_LIMIT, FREE_HISTORY_LIMIT } from "./proService";
 
 // Storage keys. These are the public contract with existing users' browsers:
 // never rename them without a migration.
@@ -10,7 +11,6 @@ const SETTINGS_KEY = 'noteweb_settings';
 const ACTIVITY_KEY = 'noteweb_activity';
 
 const TRASH_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
-const MAX_SNAPSHOTS_PER_NOTE = 20;
 const SNAPSHOT_INTERVAL_MS = 5 * 60 * 1000;
 
 const readJson = <T,>(key: string, fallback: T): T => {
@@ -77,7 +77,7 @@ export const recordSnapshot = (note: Note, force = false): void => {
   if (last && last.content === note.content && last.title === note.title) return;
   if (!force && last && Date.now() - last.at < SNAPSHOT_INTERVAL_MS) return;
   list.push({ title: note.title, content: note.content, at: Date.now() });
-  store[note.id] = list.slice(-MAX_SNAPSHOTS_PER_NOTE);
+  store[note.id] = list.slice(-(isPro() ? PRO_HISTORY_LIMIT : FREE_HISTORY_LIMIT));
   if (!writeJson(HISTORY_KEY, store)) {
     // Storage is full: keep only the newest few snapshots per note and retry.
     Object.keys(store).forEach(id => {
