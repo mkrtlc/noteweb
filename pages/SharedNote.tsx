@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import { Download, ArrowRight, Lock, AlertTriangle } from 'lucide-react';
-import SiteHeader, { SiteFooter } from '../components/SiteChrome';
+import { MarketingPage } from '../components/SiteChrome';
 import { parseShareHash } from '../services/shareService';
 import { markdownToHtml } from '../utils/markdownParser';
 import { loadNotes, saveNotes } from '../services/storageService';
@@ -48,9 +48,8 @@ const SharedNote: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 overflow-y-auto bg-white text-slate-900">
-      <SiteHeader />
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+    <MarketingPage solidNav>
+      <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-28 pb-20">
         {!shared ? (
           <div className="text-center py-20">
             <AlertTriangle className="w-8 h-8 text-amber-500 mx-auto mb-4" />
@@ -92,8 +91,7 @@ const SharedNote: React.FC = () => {
           </>
         )}
       </main>
-      <SiteFooter />
-    </div>
+    </MarketingPage>
   );
 };
 

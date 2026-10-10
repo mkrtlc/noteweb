@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link, useParams, Navigate } from 'react-router-dom';
-import Logo from './Logo';
+import { MarketingPage } from './SiteChrome';
 import { useSeo } from '../hooks/useSeo';
 import { getBlogPost } from '../data/blogPosts';
-import { Network, ArrowLeft, Calendar, Clock, Tag, User } from 'lucide-react';
+import { Network, Calendar, Clock, Tag, User } from 'lucide-react';
 
 const BlogPostPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -22,10 +22,10 @@ const BlogPostPage: React.FC = () => {
         return <h3 key={index} className="text-lg font-semibold text-slate-900 mt-6 mb-3">{line.slice(4)}</h3>;
       }
       if (line.startsWith('## ')) {
-        return <h2 key={index} className="text-xl font-semibold text-slate-900 mt-8 mb-4">{line.slice(3)}</h2>;
+        return <h2 key={index} className="mk-serif text-[26px] text-slate-900 mt-10 mb-4">{line.slice(3)}</h2>;
       }
       if (line.startsWith('# ')) {
-        return <h1 key={index} className="text-2xl font-bold text-slate-900 mt-8 mb-4">{line.slice(2)}</h1>;
+        return <h1 key={index} className="mk-serif text-[32px] text-slate-900 mt-10 mb-4">{line.slice(2)}</h1>;
       }
 
       // Horizontal rule
@@ -124,23 +124,8 @@ const BlogPostPage: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-50 flex flex-col overflow-y-auto">
-      {/* Header */}
-      <header className="bg-white border-b border-slate-200">
-        <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 text-slate-700 hover:text-brand-600 transition-colors">
-            <Logo className="w-6 h-6" />
-            <span className="font-bold">NoteWeb</span>
-          </Link>
-          <Link
-            to="/blog"
-            className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            All Posts
-          </Link>
-        </div>
-      </header>
+    <MarketingPage solidNav>
+      <div className="bg-[#f7f7f8] pt-16 flex flex-col min-h-screen">
 
       {/* Article */}
       <main className="max-w-3xl mx-auto px-6 py-12 flex-1">
@@ -166,7 +151,7 @@ const BlogPostPage: React.FC = () => {
           </div>
 
           {/* Title */}
-          <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+          <h1 className="mk-serif text-[34px] md:text-[44px] leading-tight text-slate-900 mb-4">
             {post.title}
           </h1>
 
@@ -209,7 +194,8 @@ const BlogPostPage: React.FC = () => {
           <p>&copy; {new Date().getFullYear()} NoteWeb. All rights reserved.</p>
         </div>
       </footer>
-    </div>
+      </div>
+    </MarketingPage>
   );
 };
 

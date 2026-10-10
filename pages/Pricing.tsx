@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Check, Sparkles, ArrowRight, Loader2, ShieldCheck, Clock } from 'lucide-react';
+import { Check, ChevronRight, Loader2, Clock } from 'lucide-react';
 import { CHECKOUT_MONTHLY, CHECKOUT_YEARLY, CHECKOUT_LIVE } from '../services/proService';
-import SiteHeader, { SiteFooter } from '../components/SiteChrome';
+import { MarketingPage, Atmosphere } from '../components/SiteChrome';
 import { useSeo } from '../hooks/useSeo';
 import { trackFeature, getAnonId } from '../services/analyticsService';
 
@@ -64,156 +64,168 @@ const Pricing: React.FC = () => {
     }
   };
 
-  const price = plan === 'yearly' ? { amount: '$5', note: 'per month, billed yearly' } : { amount: '$7', note: 'per month' };
+  const price = plan === 'yearly' ? { amount: '$5', note: 'per month, billed $60 yearly' } : { amount: '$7', note: 'per month' };
+  const d = (ms: number) => ({ ['--mk-delay' as string]: `${ms}ms` }) as React.CSSProperties;
+
+  const FAQ: [string, string][] = [
+    ['Is Free really free?', 'Yes. Unlimited notes, every core feature, no ads and no trial that runs out.'],
+    ['Will Pro read my notes?', 'No. Pro is a license check only. Your notes stay in your browser, and sync will be end-to-end encrypted.'],
+    ['Can I cancel anytime?', 'Yes, from the customer portal in one click. Your notes are never affected.'],
+    ['How do I activate Pro?', 'After checkout you get a license key by email. Paste it into the Pro button in the app sidebar.'],
+  ];
 
   return (
-    <div className="fixed inset-0 overflow-y-auto bg-white text-slate-900">
-      <SiteHeader />
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-16 sm:pt-20 pb-20">
-        <div className="text-center max-w-2xl mx-auto">
-          <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight">Simple pricing</h1>
-          <p className="mt-4 text-lg text-slate-600">Everything you need to think clearly is free, forever. Pro is for people who want their notes everywhere.</p>
-          <div className="mt-8 inline-flex p-1 rounded-xl bg-slate-100 text-sm font-medium">
+    <MarketingPage>
+      <section className="mk-atmo pt-40 pb-44">
+        <Atmosphere variant="cta" />
+        <div className="mk-container text-center">
+          <p className="mk-eyebrow !text-white/70 mk-fade-late">Pricing</p>
+          <h1 className="mk-h1 mt-4 max-w-[700px] mx-auto mk-fade-late" style={{ animationDelay: '120ms' }}>
+            Free for thinking. Pro for going further.
+          </h1>
+          <p className="mt-5 max-w-[540px] mx-auto text-[15px] text-white/80 mk-fade-late" style={{ animationDelay: '240ms' }}>
+            Everything you need for a private second brain is free, forever. Pro adds polish today and funds what's next.
+          </p>
+          <div className="mt-10 inline-flex border border-white/25 p-1 text-[13px] mk-fade-late" style={{ animationDelay: '360ms' }}>
             {(['monthly', 'yearly'] as const).map(p => (
               <button
                 key={p}
                 onClick={() => setPlan(p)}
-                className={`px-4 py-1.5 rounded-lg capitalize transition ${plan === p ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'}`}
+                className={`px-5 py-2 capitalize transition ${plan === p ? 'bg-white text-[#0b0a14]' : 'text-white/80 hover:text-white'}`}
               >
                 {p}
-                {p === 'yearly' && <span className="ml-1.5 text-xs text-emerald-600">save 28%</span>}
+                {p === 'yearly' && <span className={`ml-2 text-[11px] ${plan === p ? 'text-[#05536c]' : 'text-[#9fd3e2]'}`}>save 28%</span>}
               </button>
             ))}
           </div>
         </div>
+      </section>
 
-        <div className="mt-12 grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-          <div className="rounded-3xl ring-1 ring-slate-200 p-8 flex flex-col">
-            <h2 className="text-lg font-semibold">Free</h2>
-            <p className="mt-1 text-sm text-slate-500">For your private second brain</p>
-            <p className="mt-6">
-              <span className="text-5xl font-extrabold tracking-tight">$0</span>
-              <span className="ml-2 text-sm text-slate-500">forever</span>
-            </p>
-            <ul className="mt-8 space-y-3 text-sm flex-1">
-              {FREE.map(f => (
-                <li key={f} className="flex gap-3">
-                  <Check className="w-5 h-5 text-emerald-500 shrink-0" />
-                  <span className="text-slate-700">{f}</span>
-                </li>
-              ))}
-            </ul>
-            <Link to="/app" className="mt-8 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl ring-1 ring-slate-300 font-semibold hover:bg-slate-50">
-              Start writing <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-
-          <div className="relative rounded-3xl p-8 flex flex-col bg-gradient-to-b from-brand-50 to-white ring-2 ring-brand-500 shadow-xl shadow-brand-600/10">
-            <span className="absolute -top-3 left-8 inline-flex items-center gap-1 px-3 py-1 rounded-full bg-brand-600 text-on-accent text-xs font-semibold">
-              <Sparkles className="w-3.5 h-3.5" /> Supporter
-            </span>
-            <h2 className="text-lg font-semibold">Pro</h2>
-            <p className="mt-1 text-sm text-slate-500">More room, more polish, and the future of NoteWeb</p>
-            <p className="mt-6">
-              <span className="text-5xl font-extrabold tracking-tight">{price.amount}</span>
-              <span className="ml-2 text-sm text-slate-500">{price.note}</span>
-            </p>
-            <p className="text-xs text-slate-400 mt-1">Cancel anytime. Taxes handled by Polar, our merchant of record.</p>
-            <ul className="mt-6 space-y-3 text-sm">
-              {PRO_NOW.map(f => (
-                <li key={f} className="flex gap-3">
-                  <Check className="w-5 h-5 text-brand-600 shrink-0" />
-                  <span className="text-slate-700">{f}</span>
-                </li>
-              ))}
-            </ul>
-            <p className="mt-5 text-xs font-semibold uppercase tracking-wider text-slate-400">Coming to Pro</p>
-            <ul className="mt-2 space-y-2 text-sm flex-1">
-              {PRO_SOON.map(f => (
-                <li key={f} className="flex gap-3">
-                  <Clock className="w-5 h-5 text-slate-400 shrink-0" />
-                  <span className="text-slate-500">{f}</span>
-                </li>
-              ))}
-            </ul>
-            {CHECKOUT_LIVE ? (
-              <a
-                href={plan === 'yearly' ? CHECKOUT_YEARLY : CHECKOUT_MONTHLY}
-                onClick={() => trackFeature('checkout_started', { plan, where: 'pricing' })}
-                className="mt-8 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-on-accent font-semibold"
-              >
-                Get Pro {plan === 'yearly' ? 'yearly' : 'monthly'} <ArrowRight className="w-4 h-4" />
-              </a>
-            ) : (
-              <a
-                href="#early-access"
-                onClick={() => trackFeature('checkout_started', { plan, where: 'pricing_prelaunch' })}
-                className="mt-8 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-on-accent font-semibold"
-              >
-                Reserve Pro: opening in a few days <ArrowRight className="w-4 h-4" />
-              </a>
-            )}
-            <Link to="/pro/welcome" className="mt-3 text-center text-xs text-slate-500 hover:text-slate-700 underline">
-              Already bought? Activate your license
-            </Link>
-          </div>
-        </div>
-
-        <div id="early-access" className="mt-12 max-w-xl mx-auto text-center scroll-mt-24">
-          <p className="text-sm font-medium text-slate-700">
-            {CHECKOUT_LIVE ? 'Not ready yet? Get one email when encrypted sync launches.' : 'Pro checkout opens in a few days. Leave your email and you will be first to know.'}
-          </p>
-          {status === 'done' ? (
-            <p className="mt-3 p-3 rounded-xl bg-emerald-50 text-emerald-700 text-sm font-medium" role="status">
-              {message}
-            </p>
-          ) : (
-            <form onSubmit={submit} className="mt-3 flex flex-col sm:flex-row gap-2">
-              <label htmlFor="waitlist-email" className="sr-only">
-                Email
-              </label>
-              <input
-                id="waitlist-email"
-                type="email"
-                required
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                autoComplete="email"
-                className="flex-1 min-w-0 px-4 py-2.5 rounded-xl bg-white ring-1 ring-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500"
-              />
-              <input type="text" tabIndex={-1} autoComplete="off" value={hp} onChange={e => setHp(e.target.value)} className="hidden" aria-hidden="true" />
-              <button type="submit" disabled={status === 'sending'} className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl ring-1 ring-slate-300 font-semibold hover:bg-slate-50 disabled:opacity-60">
-                {status === 'sending' ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                {CHECKOUT_LIVE ? 'Notify me' : 'Reserve my spot'}
-              </button>
-            </form>
-          )}
-          {status === 'error' && (
-            <p className="mt-2 text-sm text-red-600" role="alert">
-              {message}
-            </p>
-          )}
-        </div>
-
-        <div className="mt-16 max-w-3xl mx-auto grid sm:grid-cols-3 gap-4 text-sm">
-          {[
-            ['Is Free really free?', 'Yes. Unlimited notes, no ads, no trial that runs out.'],
-            ['Will Pro read my notes?', 'No. Pro is a license check only, and sync will be end-to-end encrypted: only your devices hold the key.'],
-            ['Can I leave anytime?', 'Always. Export everything to Markdown with one click, Free or Pro.'],
-          ].map(([q, a]) => (
-            <div key={q} className="p-5 rounded-2xl bg-slate-50">
-              <p className="font-semibold text-slate-900 flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-brand-600" />
-                {q}
+      <section className="relative -mt-28 pb-20">
+        <div className="mk-container">
+          <div className="grid md:grid-cols-2 border-t border-l border-[#e7e8ec] bg-white shadow-[0_30px_80px_-40px_rgba(9,7,24,0.45)] mk-reveal" style={d(0)}>
+            <div className="border-r border-b border-[#e7e8ec] p-8 sm:p-10 flex flex-col">
+              <p className="mk-eyebrow">Free</p>
+              <h2 className="mk-serif text-[30px] mt-2">For your private second brain</h2>
+              <p className="mt-6 flex items-baseline gap-2">
+                <span className="mk-serif text-[56px] leading-none">$0</span>
+                <span className="text-[13px] text-[#8a8e9b]">forever</span>
               </p>
-              <p className="mt-2 text-slate-600">{a}</p>
+              <ul className="mt-8 space-y-3 text-[14px] flex-1">
+                {FREE.map(f => (
+                  <li key={f} className="flex gap-3">
+                    <Check className="w-4 h-4 mt-0.5 text-[#05536c] shrink-0" />
+                    <span className="text-[#3a3d48]">{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link to="/app" className="mk-btn mk-btn-outline mk-btn-lg mt-10 justify-center">
+                Start writing <ChevronRight className="w-4 h-4" />
+              </Link>
             </div>
-          ))}
+
+            <div className="relative border-r border-b border-[#e7e8ec] p-8 sm:p-10 flex flex-col bg-[linear-gradient(180deg,#f2f8fa_0%,#ffffff_60%)]">
+              <span className="absolute top-0 left-0 right-0 h-[2px] bg-[#ec7a4b]" />
+              <p className="mk-eyebrow">Pro</p>
+              <h2 className="mk-serif text-[30px] mt-2">More room, more polish</h2>
+              <p className="mt-6 flex items-baseline gap-2">
+                <span key={plan} className="mk-serif text-[56px] leading-none mk-panel-enter">{price.amount}</span>
+                <span className="text-[13px] text-[#8a8e9b]">{price.note}</span>
+              </p>
+              <p className="mt-2 text-[12px] text-[#8a8e9b]">Cancel anytime. Taxes handled by Polar, our merchant of record.</p>
+              <ul className="mt-8 space-y-3 text-[14px]">
+                {PRO_NOW.map(f => (
+                  <li key={f} className="flex gap-3">
+                    <Check className="w-4 h-4 mt-0.5 text-[#05536c] shrink-0" />
+                    <span className="text-[#3a3d48]">{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-6 text-[11px] tracking-[0.08em] uppercase text-[#8a8e9b]">Coming to Pro</p>
+              <ul className="mt-3 space-y-2.5 text-[14px] flex-1">
+                {PRO_SOON.map(f => (
+                  <li key={f} className="flex gap-3">
+                    <Clock className="w-4 h-4 mt-0.5 text-[#b4b8c3] shrink-0" />
+                    <span className="text-[#8a8e9b]">{f}</span>
+                  </li>
+                ))}
+              </ul>
+              {CHECKOUT_LIVE ? (
+                <a
+                  href={plan === 'yearly' ? CHECKOUT_YEARLY : CHECKOUT_MONTHLY}
+                  onClick={() => trackFeature('checkout_started', { plan, where: 'pricing' })}
+                  className="mk-btn mk-btn-teal mk-btn-lg mt-10 justify-center"
+                >
+                  Get Pro {plan === 'yearly' ? 'yearly' : 'monthly'} <ChevronRight className="w-4 h-4" />
+                </a>
+              ) : (
+                <a href="#early-access" onClick={() => trackFeature('checkout_started', { plan, where: 'pricing_prelaunch' })} className="mk-btn mk-btn-teal mk-btn-lg mt-10 justify-center">
+                  Reserve Pro: opening in a few days <ChevronRight className="w-4 h-4" />
+                </a>
+              )}
+              <Link to="/pro/welcome" className="mt-3 text-center text-[12px] text-[#5d6170] hover:text-[#0b0a14] underline underline-offset-4">
+                Already bought? Activate your license
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
-      <SiteFooter />
-    </div>
+
+      <section className="pb-24">
+        <div className="mk-container">
+          <div className="text-center">
+            <p className="mk-eyebrow mk-reveal">Questions</p>
+            <h2 className="mk-h2 mt-4 mk-reveal" style={d(80)}>Good to know</h2>
+          </div>
+          <div className="mk-bento mt-12 !grid-cols-1 sm:!grid-cols-2">
+            {FAQ.map(([q, a], i) => (
+              <div key={q} className="mk-cell !p-8 mk-reveal" style={d((i % 2) * 90)}>
+                <h3 className="mk-h3">{q}</h3>
+                <p className="mt-2 text-[14px] leading-relaxed text-[#5d6170]">{a}</p>
+              </div>
+            ))}
+          </div>
+
+          <div id="early-access" className="mt-20 max-w-[560px] mx-auto text-center scroll-mt-24 mk-reveal">
+            <p className="mk-serif text-[24px]">
+              {CHECKOUT_LIVE ? 'Want to know when encrypted sync ships?' : 'Pro checkout opens in a few days'}
+            </p>
+            <p className="mt-2 text-[14px] text-[#5d6170]">One email, no spam. Unsubscribe anytime.</p>
+            {status === 'done' ? (
+              <p className="mt-5 p-4 border border-[#b0d8e5] bg-[#eef7fa] text-[#05536c] text-[14px]" role="status">
+                {message}
+              </p>
+            ) : (
+              <form onSubmit={submit} className="mt-5 flex flex-col sm:flex-row gap-2">
+                <label htmlFor="waitlist-email" className="sr-only">
+                  Email
+                </label>
+                <input
+                  id="waitlist-email"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                  className="flex-1 min-w-0 px-4 py-3 bg-white border border-[#d9dce3] text-[14px] focus:outline-none focus:border-[#05536c]"
+                />
+                <input type="text" tabIndex={-1} autoComplete="off" value={hp} onChange={e => setHp(e.target.value)} className="hidden" aria-hidden="true" />
+                <button type="submit" disabled={status === 'sending'} className="mk-btn mk-btn-teal mk-btn-lg justify-center disabled:opacity-60">
+                  {status === 'sending' ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                  {CHECKOUT_LIVE ? 'Notify me' : 'Reserve my spot'}
+                </button>
+              </form>
+            )}
+            {status === 'error' && (
+              <p className="mt-2 text-[13px] text-[#c2410c]" role="alert">
+                {message}
+              </p>
+            )}
+          </div>
+        </div>
+      </section>
+    </MarketingPage>
   );
 };
 

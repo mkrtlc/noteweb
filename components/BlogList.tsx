@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Logo from './Logo';
+import { MarketingPage } from './SiteChrome';
 import { useSeo } from '../hooks/useSeo';
 import { getAllBlogPosts } from '../data/blogPosts';
-import { ArrowLeft, Calendar, Clock, Tag } from 'lucide-react';
+import { Calendar, Clock, Tag } from 'lucide-react';
 
 const BlogList: React.FC = () => {
   const posts = getAllBlogPosts();
@@ -14,28 +14,13 @@ const BlogList: React.FC = () => {
   );
 
   return (
-    <div className="fixed inset-0 bg-slate-50 flex flex-col overflow-y-auto">
-      {/* Header */}
-      <header className="bg-white border-b border-slate-200">
-        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 text-slate-700 hover:text-brand-600 transition-colors">
-            <Logo className="w-6 h-6" />
-            <span className="font-bold">NoteWeb</span>
-          </Link>
-          <Link
-            to="/app"
-            className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to App
-          </Link>
-        </div>
-      </header>
+    <MarketingPage solidNav>
+      <div className="bg-[#f7f7f8] pt-16 flex flex-col min-h-screen">
 
       {/* Hero */}
       <div className="bg-white border-b border-slate-200">
         <div className="max-w-4xl mx-auto px-6 py-16 text-center">
-          <h1 className="text-4xl font-bold text-slate-900 mb-4">NoteWeb Blog</h1>
+          <h1 className="mk-serif text-[44px] leading-tight text-slate-900 mb-4">NoteWeb Blog</h1>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
             Tips, tutorials, and insights on note-taking, personal knowledge management, and getting the most out of NoteWeb.
           </p>
@@ -66,7 +51,7 @@ const BlogList: React.FC = () => {
                   </span>
                 </div>
 
-                <h2 className="text-xl font-semibold text-slate-900 group-hover:text-brand-600 transition-colors mb-2">
+                <h2 className="mk-serif text-[24px] text-slate-900 group-hover:text-brand-600 transition-colors mb-2">
                   {post.title}
                 </h2>
 
@@ -103,7 +88,8 @@ const BlogList: React.FC = () => {
           <p>&copy; {new Date().getFullYear()} NoteWeb. All rights reserved.</p>
         </div>
       </footer>
-    </div>
+      </div>
+    </MarketingPage>
   );
 };
 

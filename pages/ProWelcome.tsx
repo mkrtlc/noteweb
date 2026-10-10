@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Sparkles, KeyRound, Mail, ExternalLink, Loader2, Check, ArrowRight } from 'lucide-react';
-import SiteHeader, { SiteFooter } from '../components/SiteChrome';
+import { MarketingPage } from '../components/SiteChrome';
 import { useSeo } from '../hooks/useSeo';
 import { activateLicense, CUSTOMER_PORTAL } from '../services/proService';
 import { usePro } from '../hooks/usePro';
@@ -33,9 +33,8 @@ const ProWelcome: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 overflow-y-auto bg-white text-slate-900">
-      <SiteHeader />
-      <main className="max-w-2xl mx-auto px-4 sm:px-6 py-14 sm:py-20">
+    <MarketingPage solidNav>
+      <main className="max-w-2xl mx-auto px-4 sm:px-6 pt-32 pb-24">
         <div className="text-center">
           <div className="mx-auto w-14 h-14 rounded-2xl bg-brand-600 text-on-accent flex items-center justify-center shadow-lg shadow-brand-600/25">
             <Sparkles className="w-7 h-7" />
@@ -108,8 +107,7 @@ const ProWelcome: React.FC = () => {
           </>
         )}
       </main>
-      <SiteFooter />
-    </div>
+    </MarketingPage>
   );
 };
 

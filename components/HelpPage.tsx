@@ -1,10 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Logo from './Logo';
+import { MarketingPage } from './SiteChrome';
 import { useSeo } from '../hooks/useSeo';
 import {
   Network,
-  ArrowLeft,
   FileText,
   FolderOpen,
   Link2,
@@ -44,7 +43,7 @@ interface SectionProps {
 
 const Section: React.FC<SectionProps> = ({ title, icon, children }) => (
   <section className="mb-12">
-    <h2 className="flex items-center gap-3 text-xl font-semibold text-slate-900 mb-4 pb-2 border-b border-slate-200">
+    <h2 className="flex items-center gap-3 mk-serif text-[26px] text-slate-900 mb-4 pb-2 border-b border-slate-200">
       {icon}
       {title}
     </h2>
@@ -75,23 +74,8 @@ const Kbd: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 const HelpPage: React.FC = () => {
   useSeo('NoteWeb Help: shortcuts, linking, graph and backups', 'How to use NoteWeb: slash commands, wiki links, backlinks, the knowledge graph, shortcuts, backups and more.', '/help');
   return (
-    <div className="fixed inset-0 bg-slate-50 flex flex-col overflow-y-auto">
-      {/* Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 text-slate-700 hover:text-brand-600 transition-colors">
-            <Logo className="w-6 h-6" />
-            <span className="font-bold">NoteWeb</span>
-          </Link>
-          <Link
-            to="/app"
-            className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to App
-          </Link>
-        </div>
-      </header>
+    <MarketingPage solidNav>
+      <div className="bg-[#f7f7f8] pt-16 flex flex-col min-h-screen">
 
       {/* Hero */}
       <div className="bg-white border-b border-slate-200">
@@ -99,7 +83,7 @@ const HelpPage: React.FC = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-brand-100 rounded-2xl mb-4">
             <HelpCircle className="w-8 h-8 text-brand-600" />
           </div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-3">Help & Documentation</h1>
+          <h1 className="mk-serif text-[40px] leading-tight text-slate-900 mb-3">Help & Documentation</h1>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
             Everything you need to know about NoteWeb - from basic note-taking to advanced features like graph visualization and bidirectional linking.
           </p>
@@ -471,7 +455,8 @@ const HelpPage: React.FC = () => {
           <p>&copy; {new Date().getFullYear()} NoteWeb. All rights reserved.</p>
         </div>
       </footer>
-    </div>
+      </div>
+    </MarketingPage>
   );
 };
 
