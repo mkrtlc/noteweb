@@ -16,6 +16,8 @@ A note-taking app with graph visualization and Notion-style markdown editing. Al
 - **Share by link**: the note is compressed into the URL fragment, never uploaded; recipients can save a copy
 - **Print / Save as PDF** for the current note
 - **Writing stats**: streak, totals and an 18-week activity heatmap
+- **Safety nudges**: backup reminder after two weeks, persistent-storage request so the browser doesn't evict notes
+- **Local graph** (notes within two hops), **link hover previews**, editor **font** (sans/serif/mono) and **full-width** options
 - **Installable PWA** with offline support
 - Landing page, pricing page and Pro waitlist (Cloudflare Pages Function + KV)
 

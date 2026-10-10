@@ -16,6 +16,9 @@ import {
   saveSettings,
   AppSettings,
   bumpActivity,
+  backupReminderDue,
+  snoozeBackupReminder,
+  requestPersistentStorage,
 } from '../services/storageService';
 import { scheduleNotificationsForNotes, getNotificationPermission, isNotificationSupported } from '../services/notificationService';
 import {
@@ -105,6 +108,9 @@ import {
   BarChart3,
   Share2,
   Printer,
+  Type,
+  Crosshair,
+  AlertCircle,
 } from 'lucide-react';
 
 const GraphView3D = lazy(() => import('../components/GraphView3D'));
@@ -167,6 +173,8 @@ const NotesApp: React.FC = () => {
   const [noteMenuOpen, setNoteMenuOpen] = useState(false);
   const [sortMenuOpen, setSortMenuOpen] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [backupDue, setBackupDue] = useState(false);
+  const [linkPreview, setLinkPreview] = useState<{ title: string; x: number; y: number } | null>(null);
 
   // Folder management state
   const [collapsedFolders, setCollapsedFolders] = useState<Set<string>>(new Set());
@@ -295,6 +303,31 @@ const NotesApp: React.FC = () => {
     return newData;
   }, [graphTopology, debouncedNotes]);
 
+  const visibleGraph: GraphData = useMemo(() => {
+    if (!settings.localGraph || !activeNote) return graphData;
+    const keep = new Set<string>([activeNote.id]);
+    // Two hops around the current note.
+    for (let hop = 0; hop < 2; hop++) {
+      graphData.links.forEach(l => {
+        const s = typeof l.source === 'string' ? l.source : (l.source as { id: string }).id;
+        const t = typeof l.target === 'string' ? l.target : (l.target as { id: string }).id;
+        if (keep.has(s) || keep.has(t)) {
+          keep.add(s);
+          keep.add(t);
+        }
+      });
+    }
+    return {
+      nodes: graphData.nodes.filter(n => keep.has(n.id)).map(n => ({ ...n })),
+      links: graphData.links
+        .map(l => ({
+          source: typeof l.source === 'string' ? l.source : (l.source as { id: string }).id,
+          target: typeof l.target === 'string' ? l.target : (l.target as { id: string }).id,
+        }))
+        .filter(l => keep.has(l.source) && keep.has(l.target)),
+    };
+  }, [graphData, settings.localGraph, activeNote]);
+
   // --- Effects ---
   useEffect(() => {
     const initData = async () => {
@@ -316,6 +349,40 @@ const NotesApp: React.FC = () => {
       setIsLoading(false);
     };
     initData();
+  }, []);
+
+  // Safety nudges: back up regularly, and ask the browser not to evict storage.
+  const persistAsked = useRef(false);
+  useEffect(() => {
+    if (isLoading) return;
+    setBackupDue(backupReminderDue(notes));
+    if (!persistAsked.current && notes.length >= 3) {
+      persistAsked.current = true;
+      requestPersistentStorage();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading, backupOpen]);
+
+  // Hover previews for [[links]] in the editor.
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const over = (e: MouseEvent) => {
+      const chip = (e.target as HTMLElement).closest?.('.editor-content .link-chip') as HTMLElement | null;
+      clearTimeout(timer);
+      if (!chip) {
+        setLinkPreview(null);
+        return;
+      }
+      timer = setTimeout(() => {
+        const r = chip.getBoundingClientRect();
+        setLinkPreview({ title: chip.dataset.link || chip.textContent || '', x: Math.min(r.left, window.innerWidth - 340), y: r.bottom + 8 });
+      }, 350);
+    };
+    document.addEventListener('mouseover', over);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('mouseover', over);
+    };
   }, []);
 
   useEffect(() => {
@@ -739,6 +806,11 @@ const NotesApp: React.FC = () => {
     { id: 'theme-light', label: 'Theme: Light', icon: <Sun className="w-4 h-4" />, keywords: 'appearance', run: () => { setTheme('light'); trackFeature('theme_changed', { theme: 'light' }); } },
     { id: 'theme-dark', label: 'Theme: Dark', icon: <Moon className="w-4 h-4" />, keywords: 'appearance night', run: () => { setTheme('dark'); trackFeature('theme_changed', { theme: 'dark' }); } },
     { id: 'theme-system', label: 'Theme: Match system', icon: <Monitor className="w-4 h-4" />, keywords: 'appearance auto', run: () => { setTheme('system'); trackFeature('theme_changed', { theme: 'system' }); } },
+    { id: 'font-sans', label: 'Editor font: Sans', icon: <Type className="w-4 h-4" />, keywords: 'typography appearance', run: () => updateSettings({ editorFont: 'sans' }) },
+    { id: 'font-serif', label: 'Editor font: Serif', icon: <Type className="w-4 h-4" />, keywords: 'typography appearance', run: () => updateSettings({ editorFont: 'serif' }) },
+    { id: 'font-mono', label: 'Editor font: Mono', icon: <Type className="w-4 h-4" />, keywords: 'typography appearance code', run: () => updateSettings({ editorFont: 'mono' }) },
+    { id: 'wide', label: settings.wideEditor ? 'Readable width editor' : 'Full width editor', icon: <Maximize2 className="w-4 h-4" />, keywords: 'layout', run: () => updateSettings({ wideEditor: !settings.wideEditor }) },
+    { id: 'local-graph', label: settings.localGraph ? 'Show full graph' : 'Show local graph (nearby notes)', icon: <Crosshair className="w-4 h-4" />, run: () => updateSettings({ localGraph: !settings.localGraph, showGraph: true, rightTab: 'graph' }) },
     { id: 'shortcuts', label: 'Keyboard shortcuts', icon: <Keyboard className="w-4 h-4" />, shortcut: `${modKey} /`, run: () => setShortcutsOpen(true) },
     { id: 'pro', label: 'NoteWeb Pro: sync, publish & more', icon: <Sparkles className="w-4 h-4" />, keywords: 'pricing upgrade', run: () => window.location.assign('/pricing') },
   ];
@@ -1193,6 +1265,32 @@ const NotesApp: React.FC = () => {
                   <Maximize2 className="w-4 h-4 text-slate-400" /> {focusMode ? 'Exit focus mode' : 'Focus mode'}
                 </button>
                 <div className="border-t border-slate-100 my-1" />
+                <div className="px-3 pt-1 pb-1.5">
+                  <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+                    <Type className="w-3 h-3" /> Text
+                  </p>
+                  <div className="grid grid-cols-3 gap-1 mb-1.5">
+                    {(['sans', 'serif', 'mono'] as const).map(f => (
+                      <button
+                        key={f}
+                        onClick={() => updateSettings({ editorFont: f })}
+                        className={`py-1 text-xs rounded-md capitalize ${settings.editorFont === f ? 'bg-brand-600 text-on-accent' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'} ${f === 'serif' ? 'font-serif' : f === 'mono' ? 'font-mono' : ''}`}
+                      >
+                        {f}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => updateSettings({ wideEditor: !settings.wideEditor })}
+                    className="w-full flex items-center justify-between py-1 text-xs text-slate-600"
+                  >
+                    Full width
+                    <span className={`w-7 h-4 rounded-full relative transition ${settings.wideEditor ? 'bg-brand-600' : 'bg-slate-300'}`}>
+                      <span className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${settings.wideEditor ? 'left-3.5' : 'left-0.5'}`} />
+                    </span>
+                  </button>
+                </div>
+                <div className="border-t border-slate-100 my-1" />
                 <button className={`${menuItem} text-red-600 hover:bg-red-50`} onClick={() => { moveToTrash(activeNote.id); setNoteMenuOpen(false); }}>
                   <Trash2 className="w-4 h-4" /> Move to trash
                 </button>
@@ -1215,7 +1313,25 @@ const NotesApp: React.FC = () => {
                 <>
                   {/* Tags */}
                   <h1 className="hidden print:block text-3xl font-bold px-10 pt-6">{activeNote.title}</h1>
-                  <div className="print:hidden max-w-3xl w-full mx-auto px-6 md:px-10 pt-4 flex flex-wrap items-center gap-1.5 min-h-[2.25rem]">
+                  {backupDue && (
+                    <div className="print:hidden mx-4 mt-3 px-3 py-2 rounded-xl bg-amber-50 ring-1 ring-amber-200 text-amber-800 text-sm flex flex-wrap items-center gap-x-3 gap-y-1">
+                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      <span className="flex-1 min-w-[12rem]">Your notes only live in this browser. It's been a while since your last backup.</span>
+                      <button onClick={() => setBackupOpen(true)} className="font-semibold hover:underline">
+                        Back up now
+                      </button>
+                      <button
+                        onClick={() => {
+                          snoozeBackupReminder();
+                          setBackupDue(false);
+                        }}
+                        className="text-amber-700/70 hover:text-amber-900"
+                      >
+                        Later
+                      </button>
+                    </div>
+                  )}
+                  <div className={`print:hidden ${settings.wideEditor ? 'max-w-5xl' : 'max-w-3xl'} w-full mx-auto px-6 md:px-10 pt-4 flex flex-wrap items-center gap-1.5 min-h-[2.25rem]`}>
                     {activeNote.tags.map(t => (
                       <span key={t} className="group text-xs pl-2 pr-1 py-0.5 bg-slate-100 text-slate-600 rounded-full flex items-center gap-1">
                         <button onClick={() => setTagFilter(t)} title="Show notes with this tag">#{t}</button>
@@ -1260,7 +1376,7 @@ const NotesApp: React.FC = () => {
                     </datalist>
                   </div>
 
-                  <div className="flex-1 min-h-0 max-w-3xl w-full mx-auto">
+                  <div className={`flex-1 min-h-0 ${settings.wideEditor ? 'max-w-5xl' : 'max-w-3xl'} w-full mx-auto nw-font-${settings.editorFont}`}>
                     <RichEditor
                       key={activeNote.id}
                       noteId={activeNote.id}
@@ -1312,6 +1428,13 @@ const NotesApp: React.FC = () => {
                 ))}
                 {rightTab === 'graph' && (
                   <div className="ml-auto flex items-center gap-0.5">
+                    <button
+                      onClick={() => updateSettings({ localGraph: !settings.localGraph })}
+                      className={`mr-1 flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded ${settings.localGraph ? 'bg-brand-600 text-on-accent' : 'text-slate-500 hover:bg-slate-200'}`}
+                      title="Show only notes near the current one"
+                    >
+                      <Crosshair className="w-3 h-3" /> Local
+                    </button>
                     {(['2D', '3D'] as const).map(m => (
                       <button
                         key={m}
@@ -1331,10 +1454,10 @@ const NotesApp: React.FC = () => {
               {rightTab === 'graph' && (
                 <div className="flex-1 relative bg-slate-100 min-h-0">
                   {graphMode === '2D' ? (
-                    <GraphView data={graphData} onNodeClick={handleNodeClick} activeNodeId={activeNote?.id || ''} />
+                    <GraphView data={visibleGraph} onNodeClick={handleNodeClick} activeNodeId={activeNote?.id || ''} />
                   ) : (
                     <Suspense fallback={<div className="p-6 text-sm text-slate-400">Loading 3D graph…</div>}>
-                      <GraphView3D data={graphData} onNodeClick={handleNodeClick} activeNodeId={activeNote?.id || ''} />
+                      <GraphView3D data={visibleGraph} onNodeClick={handleNodeClick} activeNodeId={activeNote?.id || ''} />
                     </Suspense>
                   )}
                 </div>
@@ -1489,6 +1612,24 @@ const NotesApp: React.FC = () => {
           )}
         </div>
       )}
+
+      {/* Link hover preview */}
+      {linkPreview &&
+        (() => {
+          const target = notes.find(n => n.title === linkPreview.title);
+          return (
+            <div
+              className="print:hidden fixed z-[150] w-80 p-3 rounded-xl bg-white shadow-xl ring-1 ring-slate-200 pointer-events-none"
+              style={{ left: linkPreview.x, top: linkPreview.y }}
+            >
+              <p className="text-sm font-semibold text-slate-900 truncate">{linkPreview.title}</p>
+              <p className="mt-1 text-xs text-slate-500 line-clamp-4">
+                {target ? plainText(target.content).slice(0, 280) || 'Empty note' : 'This note does not exist yet. Click to create it.'}
+              </p>
+              {target && <p className="mt-2 text-[10px] text-slate-400">Edited {relativeTime(target.updatedAt)}</p>}
+            </div>
+          );
+        })()}
 
       {/* Toasts */}
       <div className="print:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-[300] flex flex-col gap-2 items-center pointer-events-none">

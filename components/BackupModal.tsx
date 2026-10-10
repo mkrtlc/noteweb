@@ -12,7 +12,7 @@ import {
   PasswordRequiredError,
   ImportResult,
 } from '../services/backupService';
-import { storageUsageBytes } from '../services/storageService';
+import { storageUsageBytes, markBackupDone, requestPersistentStorage } from '../services/storageService';
 import { trackFeature } from '../services/analyticsService';
 
 interface Props {
@@ -35,6 +35,16 @@ const BackupModal: React.FC<Props> = ({ open, onClose, notes, folders, activeNot
   const [busy, setBusy] = useState(false);
 
   const usedKb = Math.round(storageUsageBytes() / 1024);
+  const [persisted, setPersisted] = useState<boolean | null>(null);
+
+  React.useEffect(() => {
+    if (open) navigator.storage?.persisted?.().then(setPersisted).catch(() => setPersisted(null));
+  }, [open]);
+
+  const exported = (format: string) => {
+    markBackupDone();
+    trackFeature('export_completed', { format });
+  };
 
   const finishImport = (result: ImportResult) => {
     if (!result.notes.length) {
@@ -82,7 +92,7 @@ const BackupModal: React.FC<Props> = ({ open, onClose, notes, folders, activeNot
     if (password.length < 8 || password !== password2) return;
     setBusy(true);
     await exportEncrypted(notes, folders, password);
-    trackFeature('export_completed', { format: 'encrypted' });
+    exported('encrypted');
     setBusy(false);
     setPassword('');
     setPassword2('');
@@ -110,6 +120,16 @@ const BackupModal: React.FC<Props> = ({ open, onClose, notes, folders, activeNot
             before clearing browser data.
           </p>
         </div>
+        {persisted === false && (
+          <button
+            onClick={async () => setPersisted(await requestPersistentStorage())}
+            className="w-full text-left p-3 rounded-xl ring-1 ring-amber-200 bg-amber-50 text-sm text-amber-800 hover:ring-amber-300"
+          >
+            <span className="font-medium">Protect notes from automatic cleanup.</span> Your browser may clear site data when disk space is low.
+            Click to ask it to keep NoteWeb's storage.
+          </button>
+        )}
+        {persisted === true && <p className="text-xs text-emerald-600">✓ Your browser will keep NoteWeb's storage even when disk space is low.</p>}
 
         <section>
           <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Export</h3>
@@ -120,7 +140,7 @@ const BackupModal: React.FC<Props> = ({ open, onClose, notes, folders, activeNot
               desc="One .md file per note, in folders. Opens in Obsidian, VS Code, anything."
               onClick={() => {
                 exportMarkdownZip(notes, folders);
-                trackFeature('export_completed', { format: 'markdown_zip' });
+                exported('markdown_zip');
               }}
             />
             <Row
@@ -129,7 +149,7 @@ const BackupModal: React.FC<Props> = ({ open, onClose, notes, folders, activeNot
               desc="Everything, including folders, tags and dates. Restores exactly."
               onClick={() => {
                 exportJson(notes, folders);
-                trackFeature('export_completed', { format: 'json' });
+                exported('json');
               }}
             />
             <Row

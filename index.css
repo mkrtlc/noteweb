@@ -360,3 +360,13 @@ mark.nw-hit {
     display: none !important;
   }
 }
+
+/* Editor typography options */
+.nw-font-serif .editor-content {
+  font-family: 'Source Serif 4', 'Iowan Old Style', Georgia, serif;
+  font-size: 1.15rem;
+}
+.nw-font-mono .editor-content {
+  font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+  font-size: 0.95rem;
+}

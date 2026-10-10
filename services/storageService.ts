@@ -101,9 +101,19 @@ export interface AppSettings {
   sortMode: 'manual' | 'updated' | 'created' | 'title';
   showGraph: boolean;
   rightTab: 'graph' | 'outline' | 'links';
+  editorFont: 'sans' | 'serif' | 'mono';
+  wideEditor: boolean;
+  localGraph: boolean;
 }
 
-const DEFAULT_SETTINGS: AppSettings = { sortMode: 'manual', showGraph: true, rightTab: 'graph' };
+const DEFAULT_SETTINGS: AppSettings = {
+  sortMode: 'manual',
+  showGraph: true,
+  rightTab: 'graph',
+  editorFont: 'sans',
+  wideEditor: false,
+  localGraph: false,
+};
 
 export const loadSettings = (): AppSettings => ({ ...DEFAULT_SETTINGS, ...readJson<Partial<AppSettings>>(SETTINGS_KEY, {}) });
 
@@ -154,3 +164,50 @@ export const currentStreak = (store: ActivityStore = loadActivity()): number => 
 };
 
 export { dayKey };
+
+// ---------- Backup reminders ----------
+
+const LAST_BACKUP_KEY = 'noteweb_last_backup';
+const BACKUP_SNOOZE_KEY = 'noteweb_backup_snooze';
+
+export const markBackupDone = () => {
+  try {
+    localStorage.setItem(LAST_BACKUP_KEY, String(Date.now()));
+  } catch {
+    // ignore
+  }
+};
+
+export const snoozeBackupReminder = (days = 7) => {
+  try {
+    localStorage.setItem(BACKUP_SNOOZE_KEY, String(Date.now() + days * 864e5));
+  } catch {
+    // ignore
+  }
+};
+
+/** True when the vault has real content and hasn't been backed up in two weeks. */
+export const backupReminderDue = (notes: { createdAt: number }[]): boolean => {
+  try {
+    if (notes.length < 6) return false;
+    const snoozeUntil = Number(localStorage.getItem(BACKUP_SNOOZE_KEY) || 0);
+    if (Date.now() < snoozeUntil) return false;
+    const last = Number(localStorage.getItem(LAST_BACKUP_KEY) || 0);
+    const oldest = Math.min(...notes.map(n => n.createdAt));
+    const reference = last || oldest;
+    return Date.now() - reference > 14 * 864e5;
+  } catch {
+    return false;
+  }
+};
+
+/** Asks the browser not to evict NoteWeb's storage under disk pressure. */
+export const requestPersistentStorage = async (): Promise<boolean> => {
+  try {
+    if (!navigator.storage?.persist) return false;
+    if (await navigator.storage.persisted()) return true;
+    return await navigator.storage.persist();
+  } catch {
+    return false;
+  }
+};
