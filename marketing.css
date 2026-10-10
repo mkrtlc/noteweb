@@ -59,7 +59,16 @@
 }
 
 .mk ::selection {
+  /* Light sections: dark ink on a pale teal highlight */
   background: #cfe6ee;
+  color: #0b0a14;
+}
+.mk-atmo ::selection,
+.mk footer ::selection,
+.mk-nav ::selection {
+  /* Dark sections: keep white text readable on a saturated teal highlight */
+  background: #0a7da3;
+  color: #ffffff;
 }
 
 .mk-serif {
