@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Check, Sparkles, ArrowRight, Loader2, ShieldCheck, Clock } from 'lucide-react';
-import { CHECKOUT_MONTHLY, CHECKOUT_YEARLY } from '../services/proService';
+import { CHECKOUT_MONTHLY, CHECKOUT_YEARLY, CHECKOUT_LIVE } from '../services/proService';
 import SiteHeader, { SiteFooter } from '../components/SiteChrome';
 import { useSeo } from '../hooks/useSeo';
 import { trackFeature, getAnonId } from '../services/analyticsService';
@@ -34,6 +34,9 @@ const Pricing: React.FC = () => {
 
   useEffect(() => {
     trackFeature('pricing_viewed');
+    if (window.location.hash === '#early-access') {
+      setTimeout(() => document.getElementById('early-access')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
+    }
   }, []);
 
   const submit = async (e: React.FormEvent) => {
@@ -48,12 +51,12 @@ const Pricing: React.FC = () => {
       const res = await fetch('/api/waitlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), plan, website: hp, anonId: getAnonId(), source: 'pricing' }),
+        body: JSON.stringify({ email: email.trim(), plan, website: hp, anonId: getAnonId(), source: CHECKOUT_LIVE ? 'sync_waitlist' : 'pro_prelaunch' }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Something went wrong. Please try again.');
       setStatus('done');
-      setMessage(data.already ? "You're already on the list. We'll be in touch." : "You're on the list! We'll email you when sync launches.");
+      setMessage(data.already ? "You're already on the list. We'll be in touch." : CHECKOUT_LIVE ? "You're on the list! We'll email you when sync launches." : "Spot reserved! We'll email you the moment Pro checkout opens.");
       trackFeature('pro_waitlist_joined', { plan });
     } catch (err) {
       setStatus('error');
@@ -133,21 +136,33 @@ const Pricing: React.FC = () => {
                 </li>
               ))}
             </ul>
-            <a
-              href={plan === 'yearly' ? CHECKOUT_YEARLY : CHECKOUT_MONTHLY}
-              onClick={() => trackFeature('checkout_started', { plan, where: 'pricing' })}
-              className="mt-8 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-on-accent font-semibold"
-            >
-              Get Pro {plan === 'yearly' ? 'yearly' : 'monthly'} <ArrowRight className="w-4 h-4" />
-            </a>
+            {CHECKOUT_LIVE ? (
+              <a
+                href={plan === 'yearly' ? CHECKOUT_YEARLY : CHECKOUT_MONTHLY}
+                onClick={() => trackFeature('checkout_started', { plan, where: 'pricing' })}
+                className="mt-8 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-on-accent font-semibold"
+              >
+                Get Pro {plan === 'yearly' ? 'yearly' : 'monthly'} <ArrowRight className="w-4 h-4" />
+              </a>
+            ) : (
+              <a
+                href="#early-access"
+                onClick={() => trackFeature('checkout_started', { plan, where: 'pricing_prelaunch' })}
+                className="mt-8 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-on-accent font-semibold"
+              >
+                Reserve Pro: opening in a few days <ArrowRight className="w-4 h-4" />
+              </a>
+            )}
             <Link to="/pro/welcome" className="mt-3 text-center text-xs text-slate-500 hover:text-slate-700 underline">
               Already bought? Activate your license
             </Link>
           </div>
         </div>
 
-        <div className="mt-12 max-w-xl mx-auto text-center">
-          <p className="text-sm font-medium text-slate-700">Not ready yet? Get one email when encrypted sync launches.</p>
+        <div id="early-access" className="mt-12 max-w-xl mx-auto text-center scroll-mt-24">
+          <p className="text-sm font-medium text-slate-700">
+            {CHECKOUT_LIVE ? 'Not ready yet? Get one email when encrypted sync launches.' : 'Pro checkout opens in a few days. Leave your email and you will be first to know.'}
+          </p>
           {status === 'done' ? (
             <p className="mt-3 p-3 rounded-xl bg-emerald-50 text-emerald-700 text-sm font-medium" role="status">
               {message}
@@ -170,7 +185,7 @@ const Pricing: React.FC = () => {
               <input type="text" tabIndex={-1} autoComplete="off" value={hp} onChange={e => setHp(e.target.value)} className="hidden" aria-hidden="true" />
               <button type="submit" disabled={status === 'sending'} className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl ring-1 ring-slate-300 font-semibold hover:bg-slate-50 disabled:opacity-60">
                 {status === 'sending' ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                Notify me
+                {CHECKOUT_LIVE ? 'Notify me' : 'Reserve my spot'}
               </button>
             </form>
           )}

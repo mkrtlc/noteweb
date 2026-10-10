@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Sparkles, Check, KeyRound, ExternalLink, Lock, Loader2 } from 'lucide-react';
 import Modal, { Button } from './ui/Modal';
-import { activateLicense, deactivateLicense, CUSTOMER_PORTAL, CHECKOUT_YEARLY, CHECKOUT_MONTHLY } from '../services/proService';
+import { activateLicense, deactivateLicense, CUSTOMER_PORTAL, CHECKOUT_YEARLY, CHECKOUT_MONTHLY, CHECKOUT_LIVE } from '../services/proService';
 import { ACCENTS, applyAccent, readAccent, usePro, AccentId } from '../hooks/usePro';
 import { trackFeature } from '../services/analyticsService';
 
@@ -94,16 +94,24 @@ const ProModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onCl
                 </ul>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <a href={CHECKOUT_YEARLY} onClick={() => trackFeature('checkout_started', { plan: 'yearly', where: 'app' })}>
+            {CHECKOUT_LIVE ? (
+              <div className="grid grid-cols-2 gap-2">
+                <a href={CHECKOUT_YEARLY} onClick={() => trackFeature('checkout_started', { plan: 'yearly', where: 'app' })}>
+                  <Button variant="primary" className="w-full">
+                    $60 / year
+                  </Button>
+                </a>
+                <a href={CHECKOUT_MONTHLY} onClick={() => trackFeature('checkout_started', { plan: 'monthly', where: 'app' })}>
+                  <Button className="w-full">$7 / month</Button>
+                </a>
+              </div>
+            ) : (
+              <Link to="/pricing#early-access" onClick={onClose}>
                 <Button variant="primary" className="w-full">
-                  $60 / year
+                  Reserve Pro ($7/mo or $60/yr): opening in a few days
                 </Button>
-              </a>
-              <a href={CHECKOUT_MONTHLY} onClick={() => trackFeature('checkout_started', { plan: 'monthly', where: 'app' })}>
-                <Button className="w-full">$7 / month</Button>
-              </a>
-            </div>
+              </Link>
+            )}
             <div className="pt-4 border-t border-slate-100">
               <p className="text-sm font-medium text-slate-800 flex items-center gap-2 mb-2">
                 <KeyRound className="w-4 h-4" /> Already have a license key?
