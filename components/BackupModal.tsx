@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Download, Upload, Lock, FileArchive, FileJson, ShieldCheck, FileText, FolderSync, Gem } from 'lucide-react';
+import { getSyncConfig } from '../services/syncService';
 import Modal, { Button } from './ui/Modal';
 import { Note, Folder } from '../types';
 import {
@@ -148,8 +149,9 @@ const BackupModal: React.FC<Props> = ({ open, onClose, notes, folders, activeNot
         <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 text-sm text-slate-600">
           <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
           <p>
-            Your {notes.length} notes ({usedKb} KB) live only in this browser. Nothing is uploaded. Export a backup regularly, especially
-            before clearing browser data.
+            {pro && getSyncConfig().enabled
+              ? `Your ${notes.length} notes (${usedKb} KB) are stored in this browser and synced, end-to-end encrypted, to your other devices. A local backup is still a good idea.`
+              : `Your ${notes.length} notes (${usedKb} KB) live only in this browser. Nothing is uploaded. Export a backup regularly, especially before clearing browser data.`}
           </p>
         </div>
         {persisted === false && (

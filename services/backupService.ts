@@ -20,7 +20,11 @@ const ENCRYPTED_MAGIC = 'NOTEWEB-ENCRYPTED-1';
 const safeName = (name: string) =>
   name.replace(/[\\/:*?"<>|]+/g, '-').replace(/\s+/g, ' ').trim().slice(0, 120) || 'Untitled';
 
-const stamp = () => new Date().toISOString().slice(0, 10);
+/** Today's date in the user's time zone (toISOString would give the UTC date). */
+const stamp = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
 
 export const downloadBlob = (blob: Blob, filename: string) => {
   const url = URL.createObjectURL(blob);
@@ -77,6 +81,20 @@ const noteHtmlDocument = (title: string, markdown: string, forWord: boolean) => 
   div.innerHTML = markdownToHtml(markdown);
   div.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
   div.querySelectorAll('li.task-item').forEach(el => el.prepend(document.createTextNode(el.getAttribute('data-done') === 'true' ? '☑ ' : '☐ ')));
+  // The editor stores list items as flat siblings; wrap runs of them in real lists so Word numbers them correctly.
+  [...div.children].forEach(el => {
+    const kind = el.classList.contains('numbered-item') ? 'ol' : el.classList.contains('bullet-item') || el.classList.contains('task-item') ? 'ul' : null;
+    if (!kind) return;
+    const prev = el.previousElementSibling;
+    if (prev && prev.tagName.toLowerCase() === kind && prev.getAttribute('data-run') === '1') prev.appendChild(el);
+    else {
+      const list = document.createElement(kind);
+      list.setAttribute('data-run', '1');
+      el.replaceWith(list);
+      list.appendChild(el);
+    }
+  });
+  div.querySelectorAll('[data-run]').forEach(el => el.removeAttribute('data-run'));
   const css = `body{font-family:${forWord ? 'Calibri,Arial' : '-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif'};max-width:720px;margin:40px auto;padding:0 16px;line-height:1.65;color:#1f2330}
 h1,h2,h3{line-height:1.25}pre{background:#f4f5f7;padding:12px;overflow:auto}code{font-family:Menlo,Consolas,monospace;font-size:.92em}
 blockquote{border-left:3px solid #c9ccd4;margin:0;padding-left:14px;color:#555b6a}table{border-collapse:collapse}td,th{border:1px solid #d9dbe1;padding:6px 10px}a{color:#4a48b8}li.task-item{list-style:none}li.task-item[data-done="true"]{color:#8a8e9b;text-decoration:line-through}`;

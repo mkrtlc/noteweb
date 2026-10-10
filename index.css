@@ -180,11 +180,24 @@ body {
   margin-left: 1.5em;
   padding: 0.25em 0;
 }
+/* Numbered items are flat siblings of other blocks, so the browser's own list numbering
+   would count earlier bullets too. A counter that restarts after any other block fixes that. */
+.editor-content > :not(.numbered-item) {
+  counter-reset: nw-num;
+}
 .editor-content .numbered-item {
-  display: list-item;
-  list-style-type: decimal;
+  display: block;
+  position: relative;
+  list-style: none;
   margin-left: 1.5em;
   padding: 0.25em 0;
+  counter-increment: nw-num;
+}
+.editor-content .numbered-item::before {
+  content: counter(nw-num) '.';
+  position: absolute;
+  right: calc(100% + 0.4em);
+  font-variant-numeric: tabular-nums;
 }
 
 /* Task (checklist) items */

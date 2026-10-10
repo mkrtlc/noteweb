@@ -73,7 +73,10 @@ const CommandPalette: React.FC<Props> = ({ open, onClose, notes, commands, onOpe
     const hits = searchNotes(notes, q, 30).map(h => ({ kind: 'note' as const, note: h.note, snippet: h.snippet }));
     const cmds = commands.filter(matchCommand).slice(0, 5).map(command => ({ kind: 'command' as const, command }));
     const exact = notes.some(n => n.title.toLowerCase() === q.toLowerCase());
-    return [...hits, ...(exact ? [] : [{ kind: 'create' as const, title: q }]), ...cmds];
+    const create = exact ? [] : [{ kind: 'create' as const, title: q }];
+    // When the query is part of a command's name (not just a keyword), Enter should run that command.
+    const named = q.length >= 3 && cmds.some(c => c.command.label.toLowerCase().includes(q.toLowerCase()));
+    return named ? [...hits, ...cmds, ...create] : [...hits, ...create, ...cmds];
   }, [q, commandMode, notes, commands]);
 
   useEffect(() => setSelected(0), [query]);

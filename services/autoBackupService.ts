@@ -78,7 +78,10 @@ export const runAutoBackup = async (notes: Note[], folders: Folder[], force = fa
   if (!handle) return 'off';
   if ((await handle.queryPermission?.({ mode: 'readwrite' })) !== 'granted') return 'needs-permission';
 
-  const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
+  // Local time, so the file name matches the user's clock (sorts correctly: YYYY-MM-DD-HH-MM).
+  const d = new Date();
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const stamp = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}-${pad(d.getHours())}-${pad(d.getMinutes())}`;
   const file = await handle.getFileHandle(`noteweb-backup-${stamp}.json`, { create: true });
   const w = await file.createWritable();
   await w.write(JSON.stringify({ app: 'noteweb', version: 1, exportedAt: Date.now(), notes, folders }, null, 2));

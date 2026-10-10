@@ -5,6 +5,8 @@
 //   order:<order id>            latest order state
 //   sub:<subscription id>       latest subscription state
 //   customer:<email>            last known status per customer
+// Subscription and benefit changes also expire that customer's cached license checks in D1,
+// so a cancellation (or a resubscribe) takes effect on the next request instead of after the cache TTL.
 
 const enc = new TextEncoder();
 
@@ -45,8 +47,6 @@ export async function onRequestPost({ request, env }) {
   const id = await verify(request, body, env.POLAR_WEBHOOK_SECRET);
   if (!id) return json({ error: 'invalid signature' }, 403);
 
-  if (await env.SALES.get(`event:${id}`)) return json({ ok: true, duplicate: true });
-
   let event;
   try {
     event = JSON.parse(body);
@@ -55,6 +55,14 @@ export async function onRequestPost({ request, env }) {
   }
   const type = String(event.type || '');
   const d = event.data || {};
+
+  // Idempotent, so it also runs for redelivered events.
+  const customerId = d.customer_id || d.customer?.id || null;
+  if (env.DB && customerId && (type.startsWith('subscription.') || type.startsWith('benefit_grant.') || type === 'order.refunded')) {
+    await env.DB.prepare('UPDATE licenses SET checked_at = 0 WHERE customer_id = ?').bind(customerId).run();
+  }
+
+  if (await env.SALES.get(`event:${id}`)) return json({ ok: true, duplicate: true });
   await env.SALES.put(`event:${id}`, JSON.stringify({ type, receivedAt: new Date().toISOString(), data: d }), { expirationTtl: 30 * 86400 });
 
   const email = d.customer?.email || d.customer_email || null;
