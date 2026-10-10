@@ -7,6 +7,7 @@ const FOLDERS_KEY = 'noteweb_folders';
 const TRASH_KEY = 'noteweb_trash';
 const HISTORY_KEY = 'noteweb_history';
 const SETTINGS_KEY = 'noteweb_settings';
+const ACTIVITY_KEY = 'noteweb_activity';
 
 const TRASH_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
 const MAX_SNAPSHOTS_PER_NOTE = 20;
@@ -120,3 +121,36 @@ export const storageUsageBytes = (): number => {
   }
   return total;
 };
+
+// ---------- Writing activity (for streaks and the heatmap) ----------
+
+type ActivityStore = Record<string, number>; // YYYY-MM-DD -> edit sessions
+
+const dayKey = (d = new Date()) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+export const loadActivity = (): ActivityStore => readJson<ActivityStore>(ACTIVITY_KEY, {});
+
+export const bumpActivity = (): void => {
+  const store = loadActivity();
+  const key = dayKey();
+  store[key] = (store[key] || 0) + 1;
+  // Keep about a year of history.
+  const keys = Object.keys(store).sort();
+  while (keys.length > 400) delete store[keys.shift()!];
+  writeJson(ACTIVITY_KEY, store);
+};
+
+export const currentStreak = (store: ActivityStore = loadActivity()): number => {
+  let streak = 0;
+  const d = new Date();
+  // Today not written yet doesn't break the streak.
+  if (!store[dayKey(d)]) d.setDate(d.getDate() - 1);
+  while (store[dayKey(d)]) {
+    streak++;
+    d.setDate(d.getDate() - 1);
+  }
+  return streak;
+};
+
+export { dayKey };

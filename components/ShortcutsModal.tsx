@@ -19,6 +19,7 @@ const GROUPS: { title: string; items: [string, string[]][] }[] = [
     title: 'Writing',
     items: [
       ['Slash commands at line start', ['/']],
+      ['Checklist item', ['/todo']],
       ['Link to another note', ['@']],
       ['Wiki link (type it out)', ['[[Title]]']],
       ['Insert a date / reminder', ['@@']],

@@ -187,6 +187,38 @@ body {
   padding: 0.25em 0;
 }
 
+/* Task (checklist) items */
+.editor-content .task-item {
+  display: block;
+  position: relative;
+  list-style: none;
+  padding: 0.25em 0 0.25em 1.9em;
+}
+.editor-content .task-item::before {
+  content: '';
+  position: absolute;
+  left: 0.15em;
+  top: 0.55em;
+  width: 1.05em;
+  height: 1.05em;
+  border-radius: 0.3em;
+  border: 1.5px solid rgb(var(--slate-300));
+  background: rgb(var(--white));
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.editor-content .task-item:hover::before {
+  border-color: rgb(var(--brand-500));
+}
+.editor-content .task-item[data-done='true']::before {
+  background: rgb(var(--brand-600)) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 80% no-repeat;
+  border-color: rgb(var(--brand-600));
+}
+.editor-content .task-item[data-done='true'] {
+  color: rgb(var(--slate-400));
+  text-decoration: line-through;
+}
+
 /* Block quote */
 .editor-content blockquote {
   border-left: 3px solid rgb(var(--brand-500));
@@ -295,5 +327,36 @@ mark.nw-hit {
   *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* Print / Save as PDF: only the current note */
+@media print {
+  html,
+  body,
+  #root {
+    height: auto !important;
+    overflow: visible !important;
+    background: #fff !important;
+  }
+  :root.dark {
+    --white: 255 255 255;
+    --slate-900: 15 23 42;
+    --slate-800: 30 41 59;
+    --slate-700: 51 65 85;
+    --slate-600: 71 85 105;
+  }
+  .h-screen,
+  .overflow-hidden {
+    height: auto !important;
+    overflow: visible !important;
+  }
+  .editor-content {
+    overflow: visible !important;
+    height: auto !important;
+    padding: 0 2.5rem !important;
+  }
+  .drag-handle {
+    display: none !important;
   }
 }

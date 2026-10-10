@@ -12,6 +12,10 @@ A note-taking app with graph visualization and Notion-style markdown editing. Al
 - **Backup & export**: Markdown `.zip` (Obsidian-compatible), JSON, and AES-256 encrypted `.nwvault`; import `.md`, `.zip`, `.json`, `.nwvault`
 - **Links panel**: backlinks plus *unlinked mentions* with one-click linking; **outline** of headings
 - **Dark mode** (light / dark / system), **focus mode**, word count and reading time
+- **Checklists** (`/todo`) with a cross-note **Tasks** view
+- **Share by link**: the note is compressed into the URL fragment, never uploaded; recipients can save a copy
+- **Print / Save as PDF** for the current note
+- **Writing stats**: streak, totals and an 18-week activity heatmap
 - **Installable PWA** with offline support
 - Landing page, pricing page and Pro waitlist (Cloudflare Pages Function + KV)
 

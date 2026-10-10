@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback, useRef, Suspense, laz
 import { Link } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import { Note, GraphData, Folder, TrashedNote, NoteSnapshot, SortMode } from '../types';
-import { extractLinks } from '../utils/markdownParser';
+import { extractLinks, toggleTaskLine } from '../utils/markdownParser';
 import {
   loadNotes,
   saveNotes,
@@ -15,6 +15,7 @@ import {
   loadSettings,
   saveSettings,
   AppSettings,
+  bumpActivity,
 } from '../services/storageService';
 import { scheduleNotificationsForNotes, getNotificationPermission, isNotificationSupported } from '../services/notificationService';
 import {
@@ -56,6 +57,9 @@ import TrashModal from '../components/TrashModal';
 import HistoryModal from '../components/HistoryModal';
 import ShortcutsModal from '../components/ShortcutsModal';
 import TemplatePicker from '../components/TemplatePicker';
+import TasksModal from '../components/TasksModal';
+import StatsModal from '../components/StatsModal';
+import ShareModal from '../components/ShareModal';
 import Modal, { Button, Kbd, modKey } from '../components/ui/Modal';
 import Logo from '../components/Logo';
 import {
@@ -97,6 +101,10 @@ import {
   Check,
   ShieldCheck,
   Download,
+  CheckSquare,
+  BarChart3,
+  Share2,
+  Printer,
 } from 'lucide-react';
 
 const GraphView3D = lazy(() => import('../components/GraphView3D'));
@@ -153,6 +161,9 @@ const NotesApp: React.FC = () => {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [templatesOpen, setTemplatesOpen] = useState(false);
+  const [tasksOpen, setTasksOpen] = useState(false);
+  const [statsOpen, setStatsOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const [noteMenuOpen, setNoteMenuOpen] = useState(false);
   const [sortMenuOpen, setSortMenuOpen] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -413,8 +424,24 @@ const NotesApp: React.FC = () => {
     setNotes(prev => prev.map(n => (n.id === id ? { ...n, ...updates, updatedAt: Date.now() } : n)));
   };
 
+  const lastActivityBump = useRef(0);
   const updateActiveNote = (updates: Partial<Note>) => {
-    if (activeNote) updateNote(activeNote.id, updates);
+    if (!activeNote) return;
+    updateNote(activeNote.id, updates);
+    if (updates.content !== undefined && Date.now() - lastActivityBump.current > 10 * 60 * 1000) {
+      lastActivityBump.current = Date.now();
+      bumpActivity();
+    }
+  };
+
+  const toggleTask = (noteId: string, line: number) => {
+    setNotes(prev => prev.map(n => (n.id === noteId ? { ...n, content: toggleTaskLine(n.content, line), updatedAt: Date.now() } : n)));
+    trackFeature('task_toggled');
+  };
+
+  const printNote = () => {
+    trackFeature('note_printed');
+    setTimeout(() => window.print(), 50);
   };
 
   const togglePin = (id: string) => {
@@ -697,6 +724,10 @@ const NotesApp: React.FC = () => {
       keywords: 'template',
       run: () => createFromTemplate(t),
     })),
+    { id: 'tasks', label: 'Open tasks (all checklists)', icon: <CheckSquare className="w-4 h-4" />, keywords: 'todo checklist', run: () => { setTasksOpen(true); trackFeature('tasks_opened'); } },
+    { id: 'share', label: 'Share current note as a link', icon: <Share2 className="w-4 h-4" />, keywords: 'publish send link', run: () => setShareOpen(true) },
+    { id: 'print', label: 'Print or save as PDF', icon: <Printer className="w-4 h-4" />, keywords: 'pdf export', run: printNote },
+    { id: 'stats', label: 'Writing stats & streak', icon: <BarChart3 className="w-4 h-4" />, keywords: 'statistics heatmap words', run: () => { setStatsOpen(true); trackFeature('stats_opened'); } },
     { id: 'folder', label: 'New folder', icon: <FolderIcon className="w-4 h-4" />, run: () => setShowFolderModal(true) },
     { id: 'focus', label: focusMode ? 'Exit focus mode' : 'Enter focus mode', icon: <Maximize2 className="w-4 h-4" />, shortcut: `${modKey} .`, keywords: 'zen distraction', run: toggleFocus },
     { id: 'graph', label: showGraph ? 'Hide side panel' : 'Show graph & links panel', icon: <Network className="w-4 h-4" />, run: () => updateSettings({ showGraph: !showGraph }) },
@@ -799,7 +830,7 @@ const NotesApp: React.FC = () => {
 
       {/* Sidebar */}
       <aside
-        className={`${sidebarVisible ? 'w-72 translate-x-0' : 'w-0 -translate-x-full md:translate-x-0'} ${
+        className={`print:hidden ${sidebarVisible ? 'w-72 translate-x-0' : 'w-0 -translate-x-full md:translate-x-0'} ${
           isMobile ? 'fixed inset-y-0 left-0 z-40 w-72 shadow-2xl' : 'relative'
         } transition-all duration-300 bg-slate-50 border-r border-slate-200 flex flex-col overflow-hidden shrink-0`}
       >
@@ -856,6 +887,24 @@ const NotesApp: React.FC = () => {
             </button>
             <button onClick={() => setTemplatesOpen(true)} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-200/70">
               <LayoutTemplate className="w-3.5 h-3.5" /> Templates
+            </button>
+            <button
+              onClick={() => {
+                setTasksOpen(true);
+                trackFeature('tasks_opened');
+              }}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-200/70"
+            >
+              <CheckSquare className="w-3.5 h-3.5" /> Tasks
+            </button>
+            <button
+              onClick={() => {
+                setStatsOpen(true);
+                trackFeature('stats_opened');
+              }}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-200/70"
+            >
+              <BarChart3 className="w-3.5 h-3.5" /> Stats
             </button>
           </div>
         </div>
@@ -1070,7 +1119,7 @@ const NotesApp: React.FC = () => {
 
       {/* Main */}
       <main className="flex-1 flex flex-col min-w-0 bg-white relative">
-        <header className="h-14 border-b border-slate-100 flex items-center px-3 md:px-5 gap-2 shrink-0 bg-white z-20">
+        <header className="print:hidden h-14 border-b border-slate-100 flex items-center px-3 md:px-5 gap-2 shrink-0 bg-white z-20">
           {!focusMode && (
             <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-1.5 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100" title={`Toggle sidebar (${modKey} \\)`}>
               <Menu className="w-5 h-5" />
@@ -1103,6 +1152,9 @@ const NotesApp: React.FC = () => {
           >
             <Search className="w-4 h-4" />
           </button>
+          <button onClick={() => setShareOpen(true)} className="hidden sm:inline-flex p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100" title="Share as link">
+            <Share2 className="w-4 h-4" />
+          </button>
           <button onClick={toggleFocus} className="hidden md:inline-flex p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100" title={`Focus mode (${modKey} .)`}>
             {focusMode ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
           </button>
@@ -1127,6 +1179,12 @@ const NotesApp: React.FC = () => {
                 </button>
                 <button className={menuItem} onClick={() => { duplicateNote(activeNote.id); setNoteMenuOpen(false); }}>
                   <Copy className="w-4 h-4 text-slate-400" /> Duplicate
+                </button>
+                <button className={menuItem} onClick={() => { setShareOpen(true); setNoteMenuOpen(false); }}>
+                  <Share2 className="w-4 h-4 text-slate-400" /> Share as link
+                </button>
+                <button className={menuItem} onClick={() => { printNote(); setNoteMenuOpen(false); }}>
+                  <Printer className="w-4 h-4 text-slate-400" /> Print / PDF
                 </button>
                 <button className={menuItem} onClick={() => { setBackupOpen(true); setNoteMenuOpen(false); }}>
                   <Download className="w-4 h-4 text-slate-400" /> Export…
@@ -1156,7 +1214,8 @@ const NotesApp: React.FC = () => {
               activeNote && (
                 <>
                   {/* Tags */}
-                  <div className="max-w-3xl w-full mx-auto px-6 md:px-10 pt-4 flex flex-wrap items-center gap-1.5 min-h-[2.25rem]">
+                  <h1 className="hidden print:block text-3xl font-bold px-10 pt-6">{activeNote.title}</h1>
+                  <div className="print:hidden max-w-3xl w-full mx-auto px-6 md:px-10 pt-4 flex flex-wrap items-center gap-1.5 min-h-[2.25rem]">
                     {activeNote.tags.map(t => (
                       <span key={t} className="group text-xs pl-2 pr-1 py-0.5 bg-slate-100 text-slate-600 rounded-full flex items-center gap-1">
                         <button onClick={() => setTagFilter(t)} title="Show notes with this tag">#{t}</button>
@@ -1214,7 +1273,7 @@ const NotesApp: React.FC = () => {
                   </div>
 
                   {/* Status bar */}
-                  <div className="h-8 shrink-0 border-t border-slate-100 px-4 flex items-center justify-between text-[11px] text-slate-400">
+                  <div className="print:hidden h-8 shrink-0 border-t border-slate-100 px-4 flex items-center justify-between text-[11px] text-slate-400">
                     <span className="flex items-center gap-3">
                       <span>{words.toLocaleString()} words</span>
                       <span>{readingMinutes(words)} min read</span>
@@ -1232,7 +1291,7 @@ const NotesApp: React.FC = () => {
 
           {/* Right panel */}
           {panelVisible && (
-            <div className="border-l border-slate-200 bg-slate-50 flex flex-col overflow-hidden shrink-0 relative z-10" style={{ width: rightPanelWidth }}>
+            <div className="print:hidden border-l border-slate-200 bg-slate-50 flex flex-col overflow-hidden shrink-0 relative z-10" style={{ width: rightPanelWidth }}>
               <div className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-brand-400/50 active:bg-brand-500 transition-colors z-50" onMouseDown={startResizing} />
               <div className="flex items-center gap-1 p-2 border-b border-slate-200">
                 {([
@@ -1432,7 +1491,7 @@ const NotesApp: React.FC = () => {
       )}
 
       {/* Toasts */}
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[300] flex flex-col gap-2 items-center pointer-events-none">
+      <div className="print:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-[300] flex flex-col gap-2 items-center pointer-events-none">
         {toasts.map(t => (
           <div key={t.id} className="pointer-events-auto flex items-center gap-3 px-4 py-2.5 rounded-xl bg-slate-900 text-white text-sm shadow-xl" role="status">
             <span>{t.text}</span>
@@ -1473,6 +1532,9 @@ const NotesApp: React.FC = () => {
       <HistoryModal open={historyOpen} onClose={() => setHistoryOpen(false)} note={activeNote} onRestore={restoreSnapshot} />
       <ShortcutsModal open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
       <TemplatePicker open={templatesOpen} onClose={() => setTemplatesOpen(false)} onPick={createFromTemplate} />
+      <TasksModal open={tasksOpen} onClose={() => setTasksOpen(false)} notes={notes} onToggle={toggleTask} onOpenNote={openNote} />
+      <StatsModal open={statsOpen} onClose={() => setStatsOpen(false)} notes={notes} />
+      <ShareModal open={shareOpen} onClose={() => setShareOpen(false)} note={activeNote} />
 
       <Modal
         open={showFolderModal}

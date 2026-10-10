@@ -3,6 +3,15 @@
  * Supports Links, Bold, Italic, Headings, Lists, Code, Quotes, and more.
  */
 
+// Attribute-safe text (content is already &<>-escaped line by line).
+const attr = (value: string): string => value.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+// Only allow web, mail and relative links; anything else (javascript:, data:) is neutralized.
+const safeUrl = (url: string): string => {
+  const decoded = url.replace(/&amp;/g, '&').trim();
+  return /^(https?:|mailto:|\/|#)/i.test(decoded) ? attr(url.trim()) : '#';
+};
+
 // Convert Markdown string to HTML string for contentEditable
 export const markdownToHtml = (markdown: string): string => {
   if (!markdown) return '';
@@ -38,6 +47,12 @@ export const markdownToHtml = (markdown: string): string => {
     else if (/^&gt; (.+)/.test(processedLine)) {
       processedLine = processedLine.replace(/^&gt; (.+)/, '<blockquote>$1</blockquote>');
     }
+    // Task list item: - [ ] text / - [x] text
+    else if (/^[-*] \[( |x|X)\] ?(.*)/.test(processedLine)) {
+      processedLine = processedLine.replace(/^[-*] \[( |x|X)\] ?(.*)/, (_m, mark, text) =>
+        `<li class="task-item" data-done="${mark === ' ' ? 'false' : 'true'}">${text || '\u200B'}</li>`
+      );
+    }
     // Bullet list
     else if (/^[\-\*] (.+)/.test(processedLine)) {
       processedLine = processedLine.replace(/^[\-\*] (.+)/, '<li class="bullet-item">$1</li>');
@@ -50,19 +65,19 @@ export const markdownToHtml = (markdown: string): string => {
     // Inline elements
     // Date chips @@{ISO_DATE|LABEL|FORMATTED}@@
     processedLine = processedLine.replace(/@@\{(.*?)\|(.*?)\|(.*?)\}@@/g, (match, isoDate, label, formatted) => {
-      return `<span class="date-chip" contenteditable="false" data-date="${isoDate}">📅 ${label} (${formatted})</span>`;
+      return `<span class="date-chip" contenteditable="false" data-date="${attr(isoDate)}">📅 ${label} (${formatted})</span>`;
     });
 
     // Wiki Links [[Title]]
     processedLine = processedLine.replace(/\[\[(.*?)\]\]/g, (match, content) => {
       const [target, label] = content.split('|');
       const display = label || target;
-      return `<span class="link-chip" contenteditable="false" data-link="${target}">${display}</span>`;
+      return `<span class="link-chip" contenteditable="false" data-link="${attr(target)}">${display}</span>`;
     });
 
     // External Links [text](url)
     processedLine = processedLine.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, url) => {
-      return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-brand-600 underline hover:text-brand-700 cursor-pointer" contenteditable="false">${text}</a>`;
+      return `<a href="${safeUrl(url)}" target="_blank" rel="noopener noreferrer" class="text-brand-600 underline hover:text-brand-700 cursor-pointer" contenteditable="false">${text}</a>`;
     });
 
     // Code blocks ```code```
@@ -125,6 +140,7 @@ export const htmlToMarkdown = (html: string): string => {
     return ['H1', 'H2', 'H3', 'BLOCKQUOTE', 'HR', 'DIV'].includes(tag) ||
            el.classList.contains('bullet-item') ||
            el.classList.contains('numbered-item') ||
+           el.classList.contains('task-item') ||
            (tag === 'CODE' && el.classList.contains('code-block'));
   };
 
@@ -150,6 +166,12 @@ export const htmlToMarkdown = (html: string): string => {
 
       // Block quote
       if (el.tagName === 'BLOCKQUOTE') return `\n> ${Array.from(el.childNodes).map((n, i, arr) => walk(n, i > 0 ? arr[i-1] : null)).join('')}`;
+
+      // Task items keep their checked state in data-done
+      if (el.classList.contains('task-item')) {
+        const done = el.getAttribute('data-done') === 'true';
+        return `\n- [${done ? 'x' : ' '}] ${Array.from(el.childNodes).map((n, i, arr) => walk(n, i > 0 ? arr[i-1] : null)).join('')}`;
+      }
 
       // Lists - add newline before to ensure they're on their own line
       if (el.classList.contains('bullet-item')) {
@@ -252,4 +274,28 @@ export const extractDates = (markdown: string): ExtractedDate[] => {
     });
   }
   return dates;
+};
+
+export interface ExtractedTask {
+  text: string;
+  done: boolean;
+  line: number; // line index in the markdown
+}
+
+export const extractTasks = (markdown: string): ExtractedTask[] => {
+  const tasks: ExtractedTask[] = [];
+  markdown.split('\n').forEach((line, i) => {
+    const m = /^[-*] \[( |x|X)\] ?(.*)/.exec(line);
+    if (m) tasks.push({ text: m[2].replace(/[\u200B\u200C\u200D\uFEFF]/g, ''), done: m[1] !== ' ', line: i });
+  });
+  return tasks;
+};
+
+/** Flips the checkbox on the given markdown line. */
+export const toggleTaskLine = (markdown: string, line: number): string => {
+  const lines = markdown.split('\n');
+  const m = /^([-*] \[)( |x|X)(\].*)$/.exec(lines[line] || '');
+  if (!m) return markdown;
+  lines[line] = `${m[1]}${m[2] === ' ' ? 'x' : ' '}${m[3]}`;
+  return lines.join('\n');
 };

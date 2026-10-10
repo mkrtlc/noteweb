@@ -18,7 +18,7 @@ export const buildOnboardingNotes = (): Note[] => {
   return [
     make(
       'Welcome to NoteWeb',
-      `# Your notes, connected\nNoteWeb is a private place to think. Every note can link to any other, and the graph on the right shows how your ideas connect.\n## Start here\n- Read [[Linking notes]] to connect ideas\n- Open [[The graph]] to see your knowledge grow\n- Skim [[Shortcuts that save time]]\n- Learn why [[Your notes stay yours]]\n> Tip: press ⌘P (Ctrl+P on Windows) to search everything or run any command.`,
+      `# Your notes, connected\nNoteWeb is a private place to think. Every note can link to any other, and the graph on the right shows how your ideas connect.\n## Start here\n- Read [[Linking notes]] to connect ideas\n- Open [[The graph]] to see your knowledge grow\n- Skim [[Shortcuts that save time]]\n- Learn why [[Your notes stay yours]]\n## Your first five minutes\n- [x] Open NoteWeb\n- [ ] Create a note with the + button\n- [ ] Link it to this note by typing @\n- [ ] Add a checklist with /todo\n- [ ] Press ⌘P and search for anything\n> Tip: press ⌘P (Ctrl+P on Windows) to search everything or run any command.`,
       0,
       ['start'],
       true

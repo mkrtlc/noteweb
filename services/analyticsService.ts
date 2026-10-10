@@ -212,7 +212,13 @@ export const trackFeature = (
     | 'landing_cta_clicked'
     | 'pricing_viewed'
     | 'pro_waitlist_joined'
-    | 'app_installed',
+    | 'app_installed'
+    | 'note_shared'
+    | 'shared_note_saved'
+    | 'tasks_opened'
+    | 'task_toggled'
+    | 'note_printed'
+    | 'stats_opened',
   params?: Record<string, string | number | boolean>
 ) => {
   pushEvent(eventName, params);

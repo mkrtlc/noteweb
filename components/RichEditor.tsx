@@ -2,7 +2,7 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { markdownToHtml, htmlToMarkdown } from '../utils/markdownParser';
 import { Note } from '../types';
-import { Hash, FilePlus, Heading1, Heading2, Heading3, Bold, Italic, Code, List, ListOrdered, Quote, Minus, Calendar, Clock, GripVertical, Link2 } from 'lucide-react';
+import { Hash, FilePlus, Heading1, Heading2, Heading3, Bold, Italic, Code, List, ListOrdered, Quote, Minus, Calendar, Clock, GripVertical, Link2, CheckSquare } from 'lucide-react';
 
 interface RichEditorProps {
   initialContent: string;
@@ -239,6 +239,7 @@ const RichEditor: React.FC<RichEditorProps> = ({
     { id: 'code', label: 'Inline Code', icon: Code, format: '`', suffix: '`', description: 'Inline code', aliases: ['code', 'inline'] },
     { id: 'codeblock', label: 'Code Block', icon: Code, format: '```', suffix: '```', description: 'Code block', aliases: ['codeblock', 'cb', 'pre'] },
     { id: 'bullet', label: 'Bullet List', icon: List, format: '- ', description: 'Bullet list', aliases: ['bullet', 'ul', 'list', '-'] },
+    { id: 'todo', label: 'To-do List', icon: CheckSquare, format: '- [ ] ', description: 'Checklist item', aliases: ['todo', 'task', 'check', 'checkbox', '[]'] },
     { id: 'numbered', label: 'Numbered List', icon: ListOrdered, format: '1. ', description: 'Numbered list', aliases: ['numbered', 'ol', 'number', '1.'] },
     { id: 'quote', label: 'Quote', icon: Quote, format: '> ', description: 'Block quote', aliases: ['quote', 'blockquote', '>'] },
     { id: 'divider', label: 'Divider', icon: Minus, format: '---', description: 'Horizontal rule', aliases: ['divider', 'hr', 'line', '---'] },
@@ -284,7 +285,8 @@ const RichEditor: React.FC<RichEditorProps> = ({
         // Block elements that can be dragged
         if (['H1', 'H2', 'H3', 'BLOCKQUOTE', 'HR', 'CODE'].includes(tagName) ||
             el.classList.contains('bullet-item') ||
-            el.classList.contains('numbered-item')) {
+            el.classList.contains('numbered-item') ||
+            el.classList.contains('task-item')) {
           blockElements.push(el);
         }
       }
@@ -685,6 +687,11 @@ const RichEditor: React.FC<RichEditorProps> = ({
         element = document.createElement('li');
         element.className = 'numbered-item';
         element.textContent = 'List item';
+      } else if (command.id === 'todo') {
+        element = document.createElement('li');
+        element.className = 'task-item';
+        element.setAttribute('data-done', 'false');
+        element.textContent = 'To-do';
       } else if (command.id === 'quote') {
         element = document.createElement('blockquote');
         element.textContent = 'Quote';
@@ -884,6 +891,14 @@ const RichEditor: React.FC<RichEditorProps> = ({
 
   const handleClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
+    // Checkbox area of a task item (the ::before box sits in the left padding)
+    const task = target.closest?.('.task-item') as HTMLElement | null;
+    if (task && e.clientX - task.getBoundingClientRect().left < 26) {
+      e.preventDefault();
+      task.setAttribute('data-done', task.getAttribute('data-done') === 'true' ? 'false' : 'true');
+      handleInput({} as any);
+      return;
+    }
     if (target.classList.contains('link-chip')) {
       const title = target.dataset.link;
       if (title) onLinkClick(title);
@@ -1219,18 +1234,18 @@ const RichEditor: React.FC<RichEditorProps> = ({
 
         // Check if we're in a list item
         let listItem = node.nodeType === Node.ELEMENT_NODE ? node as HTMLElement : node.parentElement;
-        while (listItem && !listItem.classList.contains('bullet-item') && !listItem.classList.contains('numbered-item')) {
+        while (listItem && !listItem.classList.contains('bullet-item') && !listItem.classList.contains('numbered-item') && !listItem.classList.contains('task-item')) {
           listItem = listItem.parentElement;
         }
 
         // If we're in a list item
-        if (listItem && (listItem.classList.contains('bullet-item') || listItem.classList.contains('numbered-item'))) {
+        if (listItem && (listItem.classList.contains('bullet-item') || listItem.classList.contains('numbered-item') || listItem.classList.contains('task-item'))) {
           // Get text content, removing zero-width spaces
           const rawText = listItem.textContent || '';
           const cleanedText = rawText.replace(/[\u200B\u200C\u200D\uFEFF]/g, '').trim();
 
           // If list item is empty (or just has placeholder text), exit the list
-          if (cleanedText === '' || cleanedText === 'List item') {
+          if (cleanedText === '' || cleanedText === 'List item' || cleanedText === 'To-do') {
             e.preventDefault();
 
             // Remove the empty list item
@@ -1265,8 +1280,10 @@ const RichEditor: React.FC<RichEditorProps> = ({
           e.preventDefault();
 
           const isBullet = listItem.classList.contains('bullet-item');
+          const isTask = listItem.classList.contains('task-item');
           const newListItem = document.createElement('li');
-          newListItem.className = isBullet ? 'bullet-item' : 'numbered-item';
+          newListItem.className = isTask ? 'task-item' : isBullet ? 'bullet-item' : 'numbered-item';
+          if (isTask) newListItem.setAttribute('data-done', 'false');
 
           // Add zero-width space for cursor positioning
           const textInNewItem = document.createTextNode('\u200B');
