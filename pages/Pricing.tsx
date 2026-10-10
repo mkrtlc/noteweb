@@ -20,12 +20,14 @@ const FREE = [
 const PRO_NOW = [
   'Everything in Free',
   'End-to-end encrypted sync across all your devices',
-  'Publish notes as clean public web pages',
+  'Publish notes as web pages, with passwords, view-once links and expiry dates',
+  'Your own public site at noteweb.co/u/you, with search',
   'Private notes locked with a password',
   'Automatic daily backups to a folder you choose',
+  'Export notes as Word documents and web pages',
   'Save your own note templates',
   '200 saved versions per note (Free: 20)',
-  '6 accent color themes',
+  'Paper, Nord and High contrast themes, plus 6 accent colors',
 ];
 
 const PRO_SOON = ['Images and file attachments'];

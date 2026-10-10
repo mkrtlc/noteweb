@@ -1,21 +1,22 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Gem, Check, KeyRound, ExternalLink, Lock, Loader2, Cloud, Globe, FolderSync, LayoutTemplate, History, Palette } from 'lucide-react';
+import { Gem, Check, KeyRound, ExternalLink, Lock, Loader2, Cloud, Globe, FolderSync, LayoutTemplate, History, Palette, FileText } from 'lucide-react';
 import Modal, { Button } from './ui/Modal';
 import { activateLicense, deactivateLicense, CUSTOMER_PORTAL, CHECKOUT_YEARLY, CHECKOUT_MONTHLY, CHECKOUT_LIVE } from '../services/proService';
-import { ACCENTS, applyAccent, readAccent, usePro, AccentId } from '../hooks/usePro';
+import { ACCENTS, applyAccent, readAccent, usePro, AccentId, SURFACES, applySurface, readSurface, SurfaceId } from '../hooks/usePro';
 import { trackFeature } from '../services/analyticsService';
 
 export type ProAction = 'sync' | 'publish' | 'lock' | 'backup' | 'templates';
 
 const FEATURES: { icon: React.ElementType; title: string; body: string; action?: ProAction; cta?: string }[] = [
   { icon: Cloud, title: 'Encrypted sync', body: 'Your notes on every device, end-to-end encrypted with a passphrase only you know.', action: 'sync', cta: 'Set up sync' },
-  { icon: Globe, title: 'Publish to the web', body: 'Turn any note into a clean public page on noteweb.co, linked to your other published notes.', action: 'publish', cta: 'Publish current note' },
+  { icon: Globe, title: 'Publish to the web', body: 'Public pages and your own site at noteweb.co/u/you. Add a password, make a page view-once or let it expire.', action: 'publish', cta: 'Publish current note' },
   { icon: Lock, title: 'Private notes', body: 'Lock sensitive notes with a password. Hidden from search, graph and previews.', action: 'lock', cta: 'Lock current note' },
   { icon: FolderSync, title: 'Automatic backups', body: 'A fresh backup in a folder you choose every day, the last 14 kept.', action: 'backup', cta: 'Choose folder' },
   { icon: LayoutTemplate, title: 'Your own templates', body: 'Save any note as a reusable template with {{date}} placeholders.', action: 'templates', cta: 'Open templates' },
+  { icon: FileText, title: 'Word and web page export', body: 'Export any note as a Word document or a standalone web page.' },
   { icon: History, title: '10× version history', body: '200 saved versions per note instead of 20.' },
-  { icon: Palette, title: 'Accent colors', body: 'Six accent themes for light and dark mode.' },
+  { icon: Palette, title: 'Themes and accent colors', body: 'Paper, Nord and High contrast themes plus six accent colors, in light and dark mode.' },
 ];
 
 const ProModal: React.FC<{ open: boolean; onClose: () => void; onAction?: (a: ProAction) => void }> = ({ open, onClose, onAction }) => {
@@ -24,6 +25,7 @@ const ProModal: React.FC<{ open: boolean; onClose: () => void; onAction?: (a: Pr
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [accent, setAccent] = useState<AccentId>(readAccent);
+  const [surface, setSurface] = useState<SurfaceId>(readSurface);
 
   const activate = async () => {
     setBusy(true);
@@ -79,6 +81,25 @@ const ProModal: React.FC<{ open: boolean; onClose: () => void; onAction?: (a: Pr
                   >
                     <span className="w-3.5 h-3.5 rounded-full" style={{ background: a.swatch }} />
                     {a.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Theme</p>
+              <div className="flex flex-wrap gap-2">
+                {SURFACES.map(t => (
+                  <button
+                    key={t.id}
+                    onClick={() => {
+                      applySurface(t.id);
+                      setSurface(t.id);
+                      trackFeature('surface_changed', { surface: t.id });
+                    }}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm ring-1 ${surface === t.id ? 'ring-2 ring-slate-900' : 'ring-slate-200 hover:ring-slate-300'}`}
+                  >
+                    <span className="w-3.5 h-3.5 rounded-full ring-1 ring-black/10" style={{ background: `linear-gradient(135deg, ${t.swatch[0]} 50%, ${t.swatch[1]} 50%)` }} />
+                    {t.label}
                   </button>
                 ))}
               </div>

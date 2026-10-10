@@ -228,7 +228,11 @@ export const trackFeature = (
     | 'note_locked'
     | 'template_saved'
     | 'autobackup_enabled'
-    | 'pro_feature_gate',
+    | 'pro_feature_gate'
+    | 'site_saved'
+    | 'page_unlocked'
+    | 'note_exported_doc'
+    | 'surface_changed',
   params?: Record<string, string | number | boolean>
 ) => {
   pushEvent(eventName, params);

@@ -11,6 +11,7 @@ const HelpPage = lazy(() => import('./components/HelpPage'));
 const SharedNote = lazy(() => import('./pages/SharedNote'));
 const ProWelcome = lazy(() => import('./pages/ProWelcome'));
 const PublishedNote = lazy(() => import('./pages/PublishedNote'));
+const PublicSite = lazy(() => import('./pages/PublicSite'));
 
 const Loading: React.FC = () => (
   <div className="h-full w-full flex items-center justify-center bg-white">
@@ -43,6 +44,7 @@ const App: React.FC = () => (
         <Route path="/share" element={<SharedNote />} />
         <Route path="/pro/welcome" element={<ProWelcome />} />
         <Route path="/p/:slug" element={<PublishedNote />} />
+        <Route path="/u/:handle" element={<PublicSite />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>

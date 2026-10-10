@@ -44,3 +44,17 @@ CREATE TABLE IF NOT EXISTS pages (
   updated_at INTEGER NOT NULL,
   UNIQUE (vault_id, note_id)
 );
+
+-- Publishing options (added 2026-10-11). Run once on existing databases:
+--   ALTER TABLE pages ADD COLUMN protected INTEGER NOT NULL DEFAULT 0;  -- markdown holds client-side ciphertext
+--   ALTER TABLE pages ADD COLUMN burn INTEGER NOT NULL DEFAULT 0;       -- deleted after the first view
+--   ALTER TABLE pages ADD COLUMN expires_at INTEGER;                     -- ms epoch, NULL = never
+
+-- Public site: noteweb.co/u/<handle> lists a vault's public pages.
+CREATE TABLE IF NOT EXISTS sites (
+  vault_id TEXT PRIMARY KEY,
+  handle TEXT NOT NULL UNIQUE,
+  title TEXT NOT NULL,
+  bio TEXT,
+  created_at INTEGER NOT NULL
+);

@@ -22,7 +22,9 @@ A note-taking app with graph visualization and Notion-style markdown editing. Al
 - Landing page, pricing page and **NoteWeb Pro** via Polar: checkout links, license-key activation (`services/proService.ts`, validated against Polar's public endpoint), `/pro/welcome` success page, Pro accent themes and 200-version history
 - **Pro features** (license checked server side in `server/pro.js`, cached in D1):
   - End-to-end encrypted sync (`services/syncService.ts`, `hooks/useSync.ts`, `functions/api/sync/[[path]].js`): PBKDF2 + AES-GCM in the browser, per-item ciphertext, last-write-wins with the losing version kept in history
-  - Publish to the web (`functions/api/publish.js`, public `/p/:slug` page via `functions/api/pages/[slug].js`)
+  - Publish to the web (`functions/api/publish.js`, public `/p/:slug` page via `functions/api/pages/[slug].js`): optional password (encrypted in the browser), view-once and expiry
+  - Public site at `/u/:handle` listing open published notes (`functions/api/site.js`, `functions/api/u/[handle].js`)
+  - Export a note as Word (.doc) or HTML; Paper, Nord and High contrast themes (`data-surface`)
   - Private notes locked with a password (`services/lockService.ts`), auto-lock after 10 minutes
   - Automatic daily backups to a chosen folder (`services/autoBackupService.ts`, File System Access API)
   - Custom note templates (`services/templateService.ts`)

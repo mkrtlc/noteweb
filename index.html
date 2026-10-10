@@ -36,6 +36,8 @@
           if (dark) document.documentElement.classList.add('dark');
           var accent = localStorage.getItem('noteweb_accent');
           if (accent && localStorage.getItem('noteweb_pro')) document.documentElement.setAttribute('data-accent', accent);
+          var surface = localStorage.getItem('noteweb_surface');
+          if (surface && surface !== 'default' && localStorage.getItem('noteweb_pro')) document.documentElement.setAttribute('data-surface', surface);
         } catch (e) {}
       })();
     </script>

@@ -284,11 +284,11 @@ const PROMISES = [
 
 const PRO_FEATURES = [
   { icon: Cloud, title: 'Encrypted sync', body: 'Your notes on every computer and phone. Encrypted on your device with a passphrase only you know.' },
-  { icon: Globe, title: 'Publish to the web', body: 'Turn any note into a clean public page. Linked notes you publish link to each other.' },
+  { icon: Globe, title: 'Publish to the web', body: 'Public pages and your own site with search. Add a password, make a link view-once or let it expire.' },
   { icon: Lock, title: 'Private notes', body: 'Lock journals and sensitive notes with a password. Hidden from search, the graph and previews.' },
   { icon: HardDriveDownload, title: 'Automatic backups', body: 'A dated copy of everything in a folder you choose, every day, without thinking about it.' },
   { icon: BookmarkPlus, title: 'Your own templates', body: 'Save any note as a template for meetings, reviews or briefs, and start new notes from it.' },
-  { icon: History, title: '10× version history', body: '200 saved versions per note instead of 20, plus six accent colors for the app.' },
+  { icon: History, title: 'Export, history, themes', body: 'Word and web page export, 200 versions per note instead of 20, and Paper, Nord and High contrast themes.' },
 ];
 
 const AUDIENCES = [

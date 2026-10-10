@@ -36,7 +36,7 @@ import {
   trackSessionStart,
   trackFeature,
 } from '../services/analyticsService';
-import { mergeImport, ImportResult } from '../services/backupService';
+import { mergeImport, ImportResult, exportNoteHtml, exportNoteWord } from '../services/backupService';
 import { useTheme } from '../hooks/useTheme';
 import { useSeo } from '../hooks/useSeo';
 import { buildOnboardingNotes } from '../utils/onboarding';
@@ -71,7 +71,7 @@ import { isSessionUnlocked, lockSession, encryptContent, decryptNote } from '../
 import { addUserTemplate, fillTemplate, UserTemplate } from '../services/templateService';
 import { runAutoBackup } from '../services/autoBackupService';
 import { getPublishedMap, unpublishNote } from '../services/publishService';
-import { usePro, ACCENTS, applyAccent } from '../hooks/usePro';
+import { usePro, ACCENTS, applyAccent, SURFACES, applySurface } from '../hooks/usePro';
 import Modal, { Button, Kbd, modKey } from '../components/ui/Modal';
 import Logo from '../components/Logo';
 import {
@@ -582,6 +582,16 @@ const NotesApp: React.FC = () => {
       }
     });
 
+  /** NoteWeb Pro: export one note as a Word document or a web page. */
+  const exportDocument = (note: Note, format: 'word' | 'html') =>
+    requirePro('export', () => {
+      const text = note.lock ? (plain?.id === note.id ? plain.text : null) : note.content;
+      if (text === null) return toast('Unlock this private note to export it.');
+      if (format === 'word') exportNoteWord(note.title, text);
+      else exportNoteHtml(note.title, text);
+      trackFeature('note_exported_doc', { format });
+    });
+
   const saveAsTemplate = (note: Note) =>
     requirePro('templates', () => {
       if (note.lock) return toast("Private notes can't be saved as templates.");
@@ -963,13 +973,22 @@ const NotesApp: React.FC = () => {
       keywords: 'theme color appearance pro',
       run: () => (pro ? applyAccent(a.id) : setProOpen(true)),
     })),
+    ...SURFACES.map(t => ({
+      id: `surface-${t.id}`,
+      label: `Theme: ${t.label}${pro ? '' : ' (Pro)'}`,
+      icon: <span className="block w-4 h-4 rounded-full ring-1 ring-black/10" style={{ background: `linear-gradient(135deg, ${t.swatch[0]} 50%, ${t.swatch[1]} 50%)` }} />,
+      keywords: 'theme sepia paper nord contrast black oled appearance pro',
+      run: () => (pro ? applySurface(t.id) : requirePro('themes', () => undefined)),
+    })),
     { id: 'shortcuts', label: 'Keyboard shortcuts', icon: <Keyboard className="w-4 h-4" />, shortcut: `${modKey} /`, run: () => setShortcutsOpen(true) },
     { id: 'sync', label: sync.config.enabled ? 'Sync now' : 'Set up encrypted sync (Pro)', icon: <Cloud className="w-4 h-4" />, keywords: 'devices cloud backup', run: () => (sync.config.enabled ? sync.syncNow() : setSyncOpen(true)) },
     { id: 'publish', label: 'Publish current note to the web (Pro)', icon: <Globe className="w-4 h-4" />, keywords: 'share website page blog', run: () => setShareOpen(true) },
     { id: 'private', label: activeNote?.lock ? 'Remove lock from current note' : 'Make current note private (Pro)', icon: <Lock className="w-4 h-4" />, keywords: 'lock password encrypt hide', run: () => activeNote && (activeNote.lock ? removeLock(activeNote) : makePrivate(activeNote)) },
     { id: 'lock-now', label: 'Lock private notes now', icon: <Lock className="w-4 h-4" />, keywords: 'hide', run: () => lockSession() },
+    { id: 'export-word', label: 'Export current note as Word document (Pro)', icon: <FileText className="w-4 h-4" />, keywords: 'docx doc microsoft download', run: () => activeNote && exportDocument(activeNote, 'word') },
+    { id: 'export-html', label: 'Export current note as web page (Pro)', icon: <Globe className="w-4 h-4" />, keywords: 'html download', run: () => activeNote && exportDocument(activeNote, 'html') },
     { id: 'save-template', label: 'Save current note as template (Pro)', icon: <BookmarkPlus className="w-4 h-4" />, keywords: 'reuse', run: () => activeNote && saveAsTemplate(activeNote) },
-    { id: 'pro', label: pro ? 'NoteWeb Pro: accent colors & subscription' : 'Upgrade to NoteWeb Pro / activate license', icon: <Gem className="w-4 h-4" />, keywords: 'pricing upgrade license key accent color theme', run: () => setProOpen(true) },
+    { id: 'pro', label: pro ? 'NoteWeb Pro: themes, accent colors & subscription' : 'Upgrade to NoteWeb Pro / activate license', icon: <Gem className="w-4 h-4" />, keywords: 'pricing upgrade license key accent color theme', run: () => setProOpen(true) },
   ];
 
   const commandsRef = useRef(commands);
@@ -1430,6 +1449,14 @@ const NotesApp: React.FC = () => {
                 </button>
                 <button className={menuItem} onClick={() => { setBackupOpen(true); setNoteMenuOpen(false); }}>
                   <Download className="w-4 h-4 text-slate-400" /> Export…
+                </button>
+                <button className={menuItem} onClick={() => { setNoteMenuOpen(false); exportDocument(activeNote, 'word'); }}>
+                  <FileText className="w-4 h-4 text-slate-400" /> Export as Word
+                  {!pro && <span className="ml-auto text-[10px] text-brand-600">PRO</span>}
+                </button>
+                <button className={menuItem} onClick={() => { setNoteMenuOpen(false); exportDocument(activeNote, 'html'); }}>
+                  <Globe className="w-4 h-4 text-slate-400" /> Export as web page
+                  {!pro && <span className="ml-auto text-[10px] text-brand-600">PRO</span>}
                 </button>
                 <button className={menuItem} onClick={() => { toggleFocus(); setNoteMenuOpen(false); }}>
                   <Maximize2 className="w-4 h-4 text-slate-400" /> {focusMode ? 'Exit focus mode' : 'Focus mode'}

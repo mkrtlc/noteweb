@@ -5,6 +5,7 @@
 import { zipSync, unzipSync, strToU8, strFromU8 } from 'fflate';
 import { v4 as uuidv4 } from 'uuid';
 import { Note, Folder } from '../types';
+import { markdownToHtml } from '../utils/markdownParser';
 
 export interface BackupPayload {
   app: 'noteweb';
@@ -67,6 +68,29 @@ export const exportJson = (notes: Note[], folders: Folder[]) => {
 export const exportSingleMarkdown = (note: Note) => {
   downloadBlob(new Blob([note.content], { type: 'text/markdown' }), `${safeName(note.title)}.md`);
 };
+
+const escapeHtml = (s: string) => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+
+/** Standalone HTML for a note: no editor attributes, readable styles inline. */
+const noteHtmlDocument = (title: string, markdown: string, forWord: boolean) => {
+  const div = document.createElement('div');
+  div.innerHTML = markdownToHtml(markdown);
+  div.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+  div.querySelectorAll('li.task-item').forEach(el => el.prepend(document.createTextNode(el.getAttribute('data-done') === 'true' ? '☑ ' : '☐ ')));
+  const css = `body{font-family:${forWord ? 'Calibri,Arial' : '-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif'};max-width:720px;margin:40px auto;padding:0 16px;line-height:1.65;color:#1f2330}
+h1,h2,h3{line-height:1.25}pre{background:#f4f5f7;padding:12px;overflow:auto}code{font-family:Menlo,Consolas,monospace;font-size:.92em}
+blockquote{border-left:3px solid #c9ccd4;margin:0;padding-left:14px;color:#555b6a}table{border-collapse:collapse}td,th{border:1px solid #d9dbe1;padding:6px 10px}a{color:#4a48b8}li.task-item{list-style:none}li.task-item[data-done="true"]{color:#8a8e9b;text-decoration:line-through}`;
+  const ns = forWord ? ' xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"' : ' lang="en"';
+  return `<!doctype html><html${ns}><head><meta charset="utf-8"><title>${escapeHtml(title)}</title><style>${css}</style></head><body><h1>${escapeHtml(title)}</h1>${div.innerHTML}</body></html>`;
+};
+
+/** NoteWeb Pro: a single note as a web page. */
+export const exportNoteHtml = (title: string, markdown: string) =>
+  downloadBlob(new Blob([noteHtmlDocument(title, markdown, false)], { type: 'text/html' }), `${safeName(title)}.html`);
+
+/** NoteWeb Pro: a single note as a Word document (HTML-based .doc that Word, Pages and Google Docs open). */
+export const exportNoteWord = (title: string, markdown: string) =>
+  downloadBlob(new Blob(['\ufeff', noteHtmlDocument(title, markdown, true)], { type: 'application/msword' }), `${safeName(title)}.doc`);
 
 // ---------- Encryption (AES-GCM 256, PBKDF2-SHA256 310k iterations) ----------
 
