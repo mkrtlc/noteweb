@@ -10,7 +10,7 @@
  * Flip to true once Polar approves the account (payout connected + review passed).
  * Until then Polar rejects checkouts, so Pro CTAs collect early-access emails instead.
  */
-export const CHECKOUT_LIVE = false;
+export const CHECKOUT_LIVE = true;
 
 export const POLAR_ORG_ID = '1268ea4e-3dcf-4efc-9b30-b38878e4c8e7';
 export const CHECKOUT_MONTHLY = 'https://buy.polar.sh/polar_cl_jRFAmc2wIQkzPtxsGvuauCikWw2jV7KGrerQb4HUeOl';
